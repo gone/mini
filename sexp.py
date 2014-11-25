@@ -6,7 +6,7 @@ token_regex = re.compile(r'''(?mx)
     (?P<close_parenthese>\))|
     (?P<number_literal>\-?\d+\.\d+|\-?\d+)|
     (?P<string_literal>"[^"]*")|
-    (?P<name>[A-Za-z\?\-]+)
+    (?P<name>[A-Za-z\?\-\+\*/]+)
     )''')
 
 def parse(source):
