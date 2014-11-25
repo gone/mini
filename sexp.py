@@ -14,8 +14,6 @@ def parse(source):
     result = []
 
     for match in token_regex.finditer(source):
-        term, value = [(t,v) for t,v in match.groupdict().items() if v][0]
-
         if match.group('open_parenthese'):
             stack.append(result)
             result = []
@@ -26,18 +24,18 @@ def parse(source):
             result.append(tuple(tmp))
 
         elif match.group('number_literal'):
-            v = float(value)
+            v = float(match.group('number_literal'))
             if v.is_integer(): v = int(v)
             result.append(v)
 
         elif match.group('string_literal'):
-            result.append(value)
+            result.append(match.group('string_literal'))
 
         elif match.group('name'):
-            result.append(value)
+            result.append(match.group('name'))
 
         else:
-            raise NotImplementedError("Error: term %s value %s" % (term, value))
+            raise Exception()
 
-    assert not stack, "Trouble with nesting of brackets"
+    assert not stack, "Unmatched parenthese ("
     return tuple(result)
