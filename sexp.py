@@ -11,33 +11,33 @@ token_regex = re.compile(r'''(?mx)
 
 def parse(source):
     stack = []
-    out = []
+    result = []
 
     for match in token_regex.finditer(source):
         term, value = [(t,v) for t,v in match.groupdict().items() if v][0]
 
-        if term == 'open_parenthese':
-            stack.append(out)
-            out = []
+        if match.group('open_parenthese'):
+            stack.append(result)
+            result = []
 
-        elif term == 'close_parenthese':
+        elif match.group('close_parenthese'):
             assert stack, "Unmatched parenthese )"
-            tmpout, out = out, stack.pop()
-            out.append(tmpout)
+            tmp, result = result, stack.pop()
+            result.append(tuple(tmp))
 
-        elif term == 'number_literal':
+        elif match.group('number_literal'):
             v = float(value)
             if v.is_integer(): v = int(v)
-            out.append(v)
+            result.append(v)
 
-        elif term == 'string_literal':
-            out.append(value)
+        elif match.group('string_literal'):
+            result.append(value)
 
-        elif term == 'name':
-            out.append(value)
+        elif match.group('name'):
+            result.append(value)
 
         else:
             raise NotImplementedError("Error: term %s value %s" % (term, value))
 
     assert not stack, "Trouble with nesting of brackets"
-    return out
+    return tuple(result)
