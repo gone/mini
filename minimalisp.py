@@ -44,7 +44,6 @@ class Identifier(Atom):
     def __init__(self,value,**kwargs):
         super(Identifier,self).__init__(value,**kwargs)
 
-
 token_regex = re.compile(r'''(?mx)
     \s*(?:
     (?P<open_parenthese>\()|
@@ -68,7 +67,7 @@ def parse(source):
             tmp, result = result, stack.pop()
             start, result = result
 
-            result.append(value.SExpression(
+            result.append(SExpression(
                 tmp,
                 start = start,
                 end = match.end('close_parenthese')))
@@ -77,19 +76,19 @@ def parse(source):
             v = float(match.group('number_literal'))
             if v.is_integer(): v = int(v)
 
-            result.append(value.NumberLiteral(
+            result.append(NumberLiteral(
                 v,
                 start = match.start('number_literal'),
                 end = match.end('number_literal')))
 
         elif match.group('string_literal'):
-            result.append(value.StringLiteral(
+            result.append(StringLiteral(
                 match.group('string_literal'),
                 start = match.start('string_literal'),
                 end = match.end('string_literal')))
 
         elif match.group('identifier'):
-            result.append(value.Identifier(
+            result.append(Identifier(
                 match.group('identifier'),
                 start = match.start('identifier'),
                 end = match.end('identifier')))
@@ -98,4 +97,4 @@ def parse(source):
             raise Exception()
 
     assert not stack, "Unmatched parenthese ("
-    return value.SExpression(result)
+    return SExpression(result)
