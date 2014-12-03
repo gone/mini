@@ -127,9 +127,6 @@ def apply(function_or_special_form, pattern, environment):
     if hasattr(function_or_special_form, '__call__'):
         return function_or_special_form(map(lambda arg : evaluate(arg, environment), pattern))
 
-    if len(pattern) == 0:
-        return function_or_special_form
-
     assert False
 
 def evaluate(expression, environment):
