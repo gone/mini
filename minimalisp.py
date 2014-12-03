@@ -33,13 +33,13 @@ class Atom(Value):
     def __unicode__(self):
         return unicode(self.value)
 
-class NumberLiteral(Atom):
+class Number(Atom):
     def __init__(self,value,**kwargs):
-        super(NumberLiteral,self).__init__(value,**kwargs)
+        super(Number,self).__init__(value,**kwargs)
  
-class StringLiteral(Atom):
+class String(Atom):
     def __init__(self,value,**kwargs):
-        super(StringLiteral,self).__init__(value,**kwargs)
+        super(String,self).__init__(value,**kwargs)
 
 class Identifier(Atom):
     def __init__(self,value,**kwargs):
@@ -49,8 +49,8 @@ token_regex = re.compile(r'''(?mx)
     \s*(?:
     (?P<open_parenthese>\()|
     (?P<close_parenthese>\))|
-    (?P<number_literal>\-?\d+\.\d+|\-?\d+)|
-    (?P<string_literal>"[^"]*")|
+    (?P<number>\-?\d+\.\d+|\-?\d+)|
+    (?P<string>"[^"]*")|
     (?P<identifier>[A-Za-z\?\-\+\*/]+)
     )''')
 
@@ -73,20 +73,20 @@ def parse(source):
                 start = start,
                 end = match.end('close_parenthese')))
 
-        elif match.group('number_literal'):
-            v = float(match.group('number_literal'))
+        elif match.group('number'):
+            v = float(match.group('number'))
             if v.is_integer(): v = int(v)
 
-            result.append(NumberLiteral(
+            result.append(Number(
                 v,
-                start = match.start('number_literal'),
-                end = match.end('number_literal')))
+                start = match.start('number'),
+                end = match.end('number')))
 
-        elif match.group('string_literal'):
-            result.append(StringLiteral(
-                match.group('string_literal'),
-                start = match.start('string_literal'),
-                end = match.end('string_literal')))
+        elif match.group('string'):
+            result.append(String(
+                match.group('string'),
+                start = match.start('string'),
+                end = match.end('string')))
 
         elif match.group('identifier'):
             result.append(Identifier(
@@ -130,7 +130,7 @@ def apply(function_or_special_form, pattern, environment):
     assert False
 
 def evaluate(expression, environment):
-    if isinstance(expression, NumberLiteral) or isinstance(expression, StringLiteral):
+    if isinstance(expression, Number) or isinstance(expression, String):
         return expression
 
     if isinstance(expression, Identifier):
