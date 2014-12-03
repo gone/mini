@@ -1,4 +1,5 @@
 import re
+import traceback
 
 class Value(object):
     def __init__(self, **kwargs):
@@ -98,3 +99,65 @@ def parse(source):
 
     assert not stack, "Unmatched parenthese ("
     return SExpression(result)
+
+class Nil(object):
+    def __init__(self):
+        pass
+
+NIL = Nil()
+
+class Boolean(object):
+    def __init__(self, value):
+        self.value = value
+
+TRUE = Boolean(True)
+FALSE = Boolean(False)
+
+class SpecialForm(object):
+    def __init__(self,function):
+        self.function = function
+
+    def __call__(self,pattern,environment):
+        return self.function(pattern,environment)
+
+def apply(function_or_special_form, pattern, environment):
+    if isinstance(function_or_special_form, SpecialForm):
+        return function_or_special_form(pattern, environment)
+
+    if hasattr(function_or_special_form, '__call__'):
+        return function_or_special_form(map(lambda arg : evaluate(arg, environment), pattern))
+
+    if len(pattern) == 0:
+        return function_or_special_form
+
+    assert False
+
+def evaluate(expression, environment):
+    if isinstance(expression, NumberLiteral) or isinstance(expression, StringLiteral):
+        return expression
+
+    if isinstance(expression, Identifier):
+        return environment[expression.value]
+
+    if isinstance(expression, SExpression):
+        return apply(evaluate(expression.value[0],environment), expression.value[1:], environment)
+
+    assert False
+
+if __name__ == '__main__':
+
+    environment = {
+        'true'  : TRUE,
+        'false' : FALSE,
+        'nil'   : NIL,
+    }
+
+    while True:
+        source = raw_input('>>> ')
+        
+        try:
+            s_expression = parse(source)
+            result = evaluate(s_expression, environment)
+            print result
+        except:
+            traceback.print_exc()
