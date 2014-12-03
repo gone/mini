@@ -98,7 +98,7 @@ def parse(source):
             raise Exception()
 
     assert not stack, "Unmatched parenthese ("
-    return SExpression(result)
+    return result
 
 class Nil(object):
     def __init__(self):
@@ -156,8 +156,12 @@ if __name__ == '__main__':
         source = raw_input('>>> ')
         
         try:
-            s_expression = parse(source)
-            result = evaluate(s_expression, environment)
+            expressions = parse(source)
+
+            for expression in expressions:
+                result = evaluate(expression, environment)
+
             print result
+
         except:
             traceback.print_exc()
