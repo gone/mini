@@ -100,25 +100,27 @@ def parse(source):
     assert not stack, "Unmatched parenthese ("
     return result
 
-class Nil(object):
-    def __init__(self):
-        pass
+class Nil(Value):
+    def __init__(self,**kwargs):
+        super(Nil,self).__init__(**kwargs)
 
 NIL = Nil()
 
-class Boolean(object):
-    def __init__(self, value):
+class Boolean(Value):
+    def __init__(self, value, **kwargs):
+        super(Boolean,self).__init__(**kwargs)
         self.value = value
 
 TRUE = Boolean(True)
 FALSE = Boolean(False)
 
-class SpecialForm(object):
-    def __init__(self,function):
-        self.function = function
+class SpecialForm(Value):
+    def __init__(self,value,**kwargs):
+        super(SpecialForm,self).__init__(**kwargs)
+        self.value = value
 
     def __call__(self,pattern,environment):
-        return self.function(pattern,environment)
+        return self.value(pattern,environment)
 
 def apply(function_or_special_form, pattern, environment):
     if isinstance(function_or_special_form, SpecialForm):
