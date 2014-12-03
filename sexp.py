@@ -7,7 +7,7 @@ token_regex = re.compile(r'''(?mx)
     (?P<close_parenthese>\))|
     (?P<number_literal>\-?\d+\.\d+|\-?\d+)|
     (?P<string_literal>"[^"]*")|
-    (?P<symbol>[A-Za-z\?\-\+\*/]+)
+    (?P<identifier>[A-Za-z\?\-\+\*/]+)
     )''')
 
 def parse(source):
@@ -44,11 +44,11 @@ def parse(source):
                 start = match.start('string_literal'),
                 end = match.end('string_literal')))
 
-        elif match.group('symbol'):
-            result.append(value.Symbol(
-                match.group('symbol'),
-                start = match.start('symbol'),
-                end = match.end('symbol')))
+        elif match.group('identifier'):
+            result.append(value.Identifier(
+                match.group('identifier'),
+                start = match.start('identifier'),
+                end = match.end('identifier')))
 
         else:
             raise Exception()

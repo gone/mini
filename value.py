@@ -38,7 +38,7 @@ class StringLiteral(Atom):
     def __init__(self,value,**kwargs):
         super(StringLiteral,self).__init__(value,**kwargs)
 
-class Symbol(Atom):
+class Identifier(Atom):
     def __init__(self,value,**kwargs):
-        super(Symbol,self).__init__(value,**kwargs)
+        super(Identifier,self).__init__(value,**kwargs)
 
