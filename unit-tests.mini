@@ -1,6 +1,8 @@
 # `=` tests
 (assert "`=` returns true for equal numbers" (= 0 0))
+(assert "`=` returns false for non-equal numbers" (not (= 0 1)))
 (assert "`=` returns true for equal strings" (= "Hello, world" "Hello, world"))
+(assert "`=` returns false for non-equal strings" (not (= "Hello, world" "Goodnight, moon")))
 (assert "`=` returns true for equal true values" (= true true))
 (assert "`=` returns true for equal false values" (= false false))
 (assert "`=` returns true for nils" (= nil nil))
@@ -10,10 +12,14 @@
 (assert "`assert` returns nil for true assertion" (= (assert true) nil))
 (assert "`assert` throws AssertionError for false assertion"
         (throws? (assert false) "AssertionError"))
+(assert "`assert` throws TypeError for non-boolean assertion"
+        (throws? (assert 1) "TypeError"))
 
 # `not` tests
 (assert "`not` returns false for true" (= (not true) false))
 (assert "`not` returns true for false" (= (not false) true))
+(assert "`not` throws TypeError for non-boolean argument"
+        (throws? (not 1) "TypeError"))
 
 # `throws?` tests
 (assert "`throws?` returns false when no exception is thrown"

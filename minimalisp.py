@@ -170,10 +170,16 @@ def _assert(*arguments):
         description = 'assertion failed'
         assertion = arguments[0]
 
-    if not assertion == TRUE:
+    if not isinstance(assertion,Boolean):
+        raise Exception("TypeError: `assert` expected Boolean assertion but received {}".format(type(assertion)))
+
+    if assertion is TRUE:
+        return NIL
+
+    if assertion is FALSE:
         raise Exception("AssertionError: {}".format(description))
     
-    return NIL
+    assert False
 
 @SpecialForm
 def throws(pattern, environment):
