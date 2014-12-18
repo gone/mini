@@ -104,12 +104,18 @@ class Nil(Value):
     def __init__(self,**kwargs):
         super(Nil,self).__init__(**kwargs)
 
+    def __unicode__(self):
+        return 'nil'
+
 NIL = Nil()
 
 class Boolean(Value):
     def __init__(self, value, **kwargs):
         super(Boolean,self).__init__(**kwargs)
         self.value = value
+
+    def __unicode__(self):
+        return "true" if self.value else "false"
 
 TRUE = Boolean(True)
 FALSE = Boolean(False)
@@ -127,7 +133,7 @@ def apply(function_or_special_form, pattern, environment):
         return function_or_special_form(pattern, environment)
 
     if hasattr(function_or_special_form, '__call__'):
-        return function_or_special_form(map(lambda arg : evaluate(arg, environment), pattern))
+        return function_or_special_form(*map(lambda arg : evaluate(arg, environment), pattern))
 
     assert False
 
@@ -143,24 +149,42 @@ def evaluate(expression, environment):
 
     assert False
 
+def _assert(*arguments):
+    if len(arguments) > 1:
+        raise Exception("assert expects 1 argument, received {}".format(len(arguments)))
+
+    argument = arguments[0]
+
+    if not argument == TRUE:
+        raise Exception("AssertionError")
+    
+    return NIL
+
+builtins = {
+    'assert'    : _assert,
+    'true'      : TRUE,
+    'false'     : FALSE,
+    'nil'       : NIL,
+}
+
 if __name__ == '__main__':
+    import sys
 
-    environment = {
-        'true'  : TRUE,
-        'false' : FALSE,
-        'nil'   : NIL,
-    }
+    arguments = sys.argv[1:]
 
-    while True:
-        source = raw_input('>>> ')
+    if len(arguments) == 0:
+        environment = dict(builtins.items())
         
-        try:
-            expressions = parse(source)
-
-            for expression in expressions:
-                result = evaluate(expression, environment)
-
-            print result
-
-        except:
-            traceback.print_exc()
+        while True:
+            source = raw_input('>>> ')
+            
+            try:
+                expressions = parse(source)
+        
+                for expression in expressions:
+                    result = evaluate(expression, environment)
+        
+                print result
+        
+            except:
+                traceback.print_exc()
