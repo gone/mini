@@ -188,3 +188,21 @@ if __name__ == '__main__':
         
             except:
                 traceback.print_exc()
+
+    else:
+        for filename in arguments:
+            environment = dict(builtins.items())
+            
+            with open(filename,'r') as f:
+                source = f.read()
+
+            try:
+                expressions = parse(source)
+
+                for expression in expressions:
+                    result = evaluate(expression, environment)
+
+                print result
+
+            except:
+                traceback.print_exc()
