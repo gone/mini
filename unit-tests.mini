@@ -1,3 +1,4 @@
 # `assert` tests
 (assert "true assertion executes without exception" true)
+(assert "true assertion returns nil" (= (assert true) nil))
 (assert "false assertion throws AssertionError" (throws? (assert false) "AssertionError"))

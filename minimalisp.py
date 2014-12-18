@@ -51,7 +51,7 @@ token_regex = re.compile(r'''(?mx)
     (?P<close_parenthese>\))|
     (?P<number>\-?\d+\.\d+|\-?\d+)|
     (?P<string>"[^"]*")|
-    (?P<identifier>[A-Za-z\?\-\+\*/]+)
+    (?P<identifier>[A-Za-z\?\-\+\*/=]+)
     )''')
 
 def parse_string(string):
@@ -195,6 +195,7 @@ builtins = {
 
     # Builtin functions
     'assert'    : _assert,
+    '='         : lambda l,r : TRUE if l == r else FALSE,
 
     # Builtin special forms
     'throws?'   : throws,
