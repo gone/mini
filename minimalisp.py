@@ -54,6 +54,9 @@ token_regex = re.compile(r'''(?mx)
     (?P<identifier>[A-Za-z\?\-\+\*/]+)
     )''')
 
+def parse_string(string):
+    return string[1:-1]
+
 def parse(source):
     stack = []
     result = []
@@ -84,7 +87,7 @@ def parse(source):
 
         elif match.group('string'):
             result.append(String(
-                match.group('string'),
+                parse_string(match.group('string')),
                 start = match.start('string'),
                 end = match.end('string')))
 
@@ -150,21 +153,46 @@ def evaluate(expression, environment):
     assert False
 
 def _assert(*arguments):
-    if len(arguments) > 1:
-        raise Exception("assert expects 1 argument, received {}".format(len(arguments)))
+    if len(arguments) < 1 or len(arguments) > 2:
+        raise Exception("assert expects 1 or 2 arguments, received {}".format(len(arguments)))
 
-    argument = arguments[0]
+    if len(arguments) == 2:
+        description = arguments[0].value
+        assertion = arguments[1]
 
-    if not argument == TRUE:
-        raise Exception("AssertionError")
+    else:
+        description = 'assertion failed'
+        assertion = arguments[0]
+
+    if not assertion == TRUE:
+        raise Exception("AssertionError: {}".format(description))
     
     return NIL
+
+@SpecialForm
+def throws(pattern, environment):
+    if len(pattern) != 2:
+        raise Exception("throws? expects 2 argument, received {}".format(len(pattern)))
+
+    expression = pattern[0]
+    exception = evaluate(pattern[1], environment)
+
+    if not isinstance(exception, String):
+        raise Exception('throws? expects a string as the second argument')
+
+    try:
+        evaluate(expression, environment)
+        return FALSE
+    except Exception as e:
+        exception_type, message = e.message.split(':',1)
+        return TRUE if exception_type == exception.value else FALSE
 
 builtins = {
     'assert'    : _assert,
     'true'      : TRUE,
     'false'     : FALSE,
     'nil'       : NIL,
+    'throws?'   : throws,
 }
 
 if __name__ == '__main__':
