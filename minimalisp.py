@@ -188,10 +188,15 @@ def throws(pattern, environment):
         return TRUE if exception_type == exception.value else FALSE
 
 builtins = {
-    'assert'    : _assert,
+    # Builtin constants
     'true'      : TRUE,
     'false'     : FALSE,
     'nil'       : NIL,
+
+    # Builtin functions
+    'assert'    : _assert,
+
+    # Builtin special forms
     'throws?'   : throws,
 }
 
