@@ -46,7 +46,7 @@ class Identifier(Atom):
         super(Identifier,self).__init__(value,**kwargs)
 
 token_regex = re.compile(r'''(?mx)
-    \s*(?:
+    (\s*|\#.*?\n)*(?:
     (?P<open_parenthese>\()|
     (?P<close_parenthese>\))|
     (?P<number>\-?\d+\.\d+|\-?\d+)|
