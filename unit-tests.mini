@@ -1,4 +1,15 @@
+# `=` tests
+(assert "`=` returns true for equal numbers" (= 0 0))
+(assert "`=` returns true for equal strings" (= "Hello, world" "Hello, world"))
+(assert "`=` returns true for equal true values" (= true true))
+(assert "`=` returns true for equal false values" (= false false))
+(assert "`=` returns true for nils" (= nil nil))
+
 # `assert` tests
 (assert "true assertion executes without exception" true)
 (assert "true assertion returns nil" (= (assert true) nil))
 (assert "false assertion throws AssertionError" (throws? (assert false) "AssertionError"))
+
+# `not` tests
+(assert "not true equals false" (= (not true) false))
+(assert "not false equals true" (= (not false) true))

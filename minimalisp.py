@@ -36,10 +36,16 @@ class Atom(Value):
 class Number(Atom):
     def __init__(self,value,**kwargs):
         super(Number,self).__init__(value,**kwargs)
+
+    def __eq__(self,other):
+        return self.value == other.value
  
 class String(Atom):
     def __init__(self,value,**kwargs):
         super(String,self).__init__(value,**kwargs)
+
+    def __eq__(self,other):
+        return self.value == other.value
 
 class Identifier(Atom):
     def __init__(self,value,**kwargs):
@@ -187,6 +193,18 @@ def throws(pattern, environment):
         exception_type, message = e.message.split(':',1)
         return TRUE if exception_type == exception.value else FALSE
 
+def _not(argument):
+    if not isinstance(argument, Boolean):
+        raise Exception('TypeError: Expected Boolean but received {}'.format(type(argument)))
+
+    if argument == TRUE:
+        return FALSE
+
+    if argument == FALSE:
+        return TRUE
+
+    assert False
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -194,8 +212,9 @@ builtins = {
     'nil'       : NIL,
 
     # Builtin functions
-    'assert'    : _assert,
     '='         : lambda l,r : TRUE if l == r else FALSE,
+    'assert'    : _assert,
+    'not'       : _not,
 
     # Builtin special forms
     'throws?'   : throws,
