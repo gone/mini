@@ -211,6 +211,29 @@ def _not(argument):
 
     assert False
 
+@SpecialForm
+def define(pattern, environment):
+    if len(pattern) < 2:
+        raise Exception('DefineError')
+
+    head = pattern[0]
+    body = pattern[1:]
+
+    if isinstance(head, Identifier):
+        identifier = head.value
+
+        for expression in body:
+            result = evaluate(expression, environment)
+
+        environment[identifier] = result
+
+        return NIL
+
+    if isinstance(head, SExpression):
+        raise Exception('NotImplementedError: Defining patterns is not yet implemented')
+
+    raise Exception('TypeError: `define` expected Identifier or SExpression, got {}'.format(type(head)))
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -223,6 +246,7 @@ builtins = {
     'not'       : _not,
 
     # Builtin special forms
+    'define'    : define,
     'throws?'   : throws,
 }
 
