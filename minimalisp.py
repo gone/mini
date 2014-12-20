@@ -4,7 +4,6 @@ import re
 import traceback
 import types
 
-
 class Value(object):
     def __init__(self, **kwargs):
         for key in kwargs:
@@ -55,13 +54,32 @@ class Identifier(Atom):
     def __init__(self,value,**kwargs):
         super(Identifier,self).__init__(value,**kwargs)
 
+KEYWORDS = {}
+
+class Keyword(Atom):
+    def __init__(self,value,**kwargs):
+        super(Keyword,self).__init__(object(),**kwargs)
+        self.string = value
+
+    def __eq__(self,other):
+        return self is other
+
+def create_keyword(value,**kwargs):
+    if value in KEYWORDS:
+        return KEYWORDS[value]
+
+    k = Keyword(value,**kwargs)
+    KEYWORDS[value] = k
+    return k
+
 token_regex = re.compile(r'''(?mx)
     (\s*|\#.*?\n)*(?:
     (?P<open_parenthese>\()|
     (?P<close_parenthese>\))|
     (?P<number>\-?\d+\.\d+|\-?\d+)|
     (?P<string>"[^"]*")|
-    (?P<identifier>[A-Za-z\?\-\+\*/=]+)
+    (?P<identifier>[A-Za-z\?\-\+\*/=]+)|
+    (?P<keyword>\:[A-Za-z\?\-\+\*/=]*)
     )''')
 
 def parse(source):
@@ -103,6 +121,12 @@ def parse(source):
                 match.group('identifier'),
                 start = match.start('identifier'),
                 end = match.end('identifier')))
+
+        elif match.group('keyword'):
+            result.append(create_keyword(
+                match.group('keyword'),
+                start = match.start('keyword'),
+                end = match.end('keyword')))
 
         else:
             raise Exception()
@@ -149,7 +173,7 @@ def apply(function_or_special_form, pattern, environment):
     return function_or_special_form(pattern, environment)
 
 def evaluate(expression, environment):
-    if isinstance(expression, Number) or isinstance(expression, String):
+    if isinstance(expression, Number) or isinstance(expression, String) or isinstance(expression,Keyword):
         return expression
 
     if isinstance(expression, Identifier):

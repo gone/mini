@@ -10,6 +10,13 @@
 (assert "`=` returns true for equal true values" (= true true))
 (assert "`=` returns true for equal false values" (= false false))
 (assert "`=` returns true for nils" (= nil nil))
+(assert "`=` returns true for equal keywords" (= :keyword :keyword))
+(assert "`=` returns false for non-equal keywords" (not (= :keyword :not-the-same)))
+(assert "`=` returns false for keyword-to-string comparison (string first)"
+        (not (= :keyword ":keyword")))
+(assert "`=` returns false for keyword-to-string comparison (string first)"
+        (not (= ":keyword" :keyword)))
+
 
 # `assert` tests
 (assert "`assert` executes without exception for true assertion" true)
