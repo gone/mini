@@ -163,28 +163,32 @@ def evaluate(expression, environment):
 
     assert False
 
-def _assert(*arguments):
-    if len(arguments) == 0:
-        raise Exception("ArgumentError: assert expects 1 or more arguments, received none")
+def _assert(pattern, environment):
+    def assert_internal(*arguments):
+        if len(arguments) == 0:
+            raise Exception("ArgumentError: assert expects 1 or more arguments, received none")
+        
+        if len(arguments) == 1:
+            description = 'assertion failed'
+            assertion = arguments
+        
+        else:
+            description = arguments[0].value
+            assertion = arguments[1:]
+        
+        if not isinstance(assertion[-1],Boolean):
+            raise Exception("TypeError: `assert` expected Boolean assertion but received {}".format(type(assertion)))
+        
+        if assertion[-1] is TRUE:
+            return None
+        
+        if assertion[-1] is FALSE:
+            raise Exception("AssertionError: {}".format(description))
+        
+        assert False
 
-    if len(arguments) == 1:
-        description = 'assertion failed'
-        assertion = arguments
-
-    else:
-        description = arguments[0].value
-        assertion = arguments[1:]
-
-    if not isinstance(assertion[-1],Boolean):
-        raise Exception("TypeError: `assert` expected Boolean assertion but received {}".format(type(assertion)))
-
-    if assertion[-1] is TRUE:
-        return None
-
-    if assertion[-1] is FALSE:
-        raise Exception("AssertionError: {}".format(description))
-    
-    assert False
+    # Execute in nested scope
+    return py_to_mini(assert_internal)(pattern, dict(environment))
 
 def throws(pattern, environment):
     if len(pattern) != 2:
@@ -256,11 +260,11 @@ builtins = {
 
     # Builtin functions
     '='         : py_to_mini(lambda l,r : l == r),
-    'assert'    : py_to_mini(_assert),
     'not'       : py_to_mini(_not),
     'print'     : py_to_mini(print),
 
     # Builtin special forms
+    'assert'    : _assert,
     'define'    : define,
     'defined?'  : defined_p,
     'throws?'   : throws,

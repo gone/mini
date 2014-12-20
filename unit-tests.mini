@@ -19,10 +19,16 @@
 (assert "`assert` throws TypeError for non-boolean assertion"
         (throws? (assert 1) "TypeError"))
 (assert "`assert` can take multiple arguments" false true)
+(assert "`assert` executes assertion in a nested scope"
+        (assert "define identifier in nested scope"
+                (define identifier-in-nested-scope true)
+                true)
+        (not (defined? identifier-in-nested-scope)))
 
 # `define` tests
-(define previously-undefined-identifier true)
-(assert "`define` adds identifier to environment" previously-undefined-identifier)
+(assert "`define` adds identifier to environment"
+        (define previously-undefined-identifier true)
+        previously-undefined-identifier)
 
 #`defined?` tests
 (assert "`defined?` returns true for defined identifier" (defined? assert))
