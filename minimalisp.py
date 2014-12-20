@@ -1,5 +1,8 @@
+from __future__ import print_function
+
 import re
 import traceback
+
 
 class Value(object):
     def __init__(self, **kwargs):
@@ -236,6 +239,10 @@ def define(pattern, environment):
 
     raise Exception('TypeError: `define` expected Identifier or SExpression, got {}'.format(type(head)))
 
+def wrapped_print(*args):
+    print(*args)
+    return NIL
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -246,6 +253,7 @@ builtins = {
     '='         : lambda l,r : TRUE if l == r else FALSE,
     'assert'    : _assert,
     'not'       : _not,
+    'print'     : wrapped_print,
 
     # Builtin special forms
     'define'    : define,
@@ -264,7 +272,7 @@ if __name__ == '__main__':
             source = raw_input('>>> ')
             
             try:
-                print evaluate_expressions(parse(source), environment)
+                print(evaluate_expressions(parse(source), environment))
         
             except:
                 traceback.print_exc()
@@ -277,7 +285,7 @@ if __name__ == '__main__':
                 source = f.read()
 
             try:
-                print evaluate_expressions(parse(source), environment)
+                print(evaluate_expressions(parse(source), environment))
 
             except:
                 traceback.print_exc()
