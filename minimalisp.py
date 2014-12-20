@@ -145,14 +145,6 @@ def py_to_mini(py_object):
 
     assert False
 
-class SpecialForm(Value):
-    def __init__(self,value,**kwargs):
-        super(SpecialForm,self).__init__(**kwargs)
-        self.value = value
-
-    def __call__(self,pattern,environment):
-        return self.value(pattern,environment)
-
 def apply(function_or_special_form, pattern, environment):
     return function_or_special_form(pattern, environment)
 
@@ -195,7 +187,6 @@ def _assert(*arguments):
     
     assert False
 
-@SpecialForm
 def throws(pattern, environment):
     if len(pattern) != 2:
         raise Exception("throws? expects 2 argument, received {}".format(len(pattern)))
@@ -234,7 +225,6 @@ def evaluate_expressions(expressions, environment):
 
     return result
 
-@SpecialForm
 def define(pattern, environment):
     if len(pattern) < 2:
         raise Exception('DefineError')
@@ -254,7 +244,6 @@ def define(pattern, environment):
 
     raise Exception('TypeError: `define` expected Identifier or SExpression, got {}'.format(type(head)))
 
-@SpecialForm
 def defined_p(pattern, environment):
     if len(pattern) != 1:
         raise Exception("ArgumentError: `defined?` expects 1 argument, received {}".format(len(pattern)))
