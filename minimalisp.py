@@ -131,9 +131,15 @@ TRUE = Boolean(True)
 FALSE = Boolean(False)
 
 def py_to_mini(py_object):
-    if isinstance(py_object,types.FunctionType):
-        def wrapped(*args, **kwargs):
-            return py_object(*args,**kwargs)
+    if isinstance(py_object,types.FunctionType) or isinstance(py_object,types.BuiltinFunctionType):
+        def wrapped(pattern, environment):
+            result = py_object(*map(lambda arg : evaluate(arg,environment),pattern))
+
+            return {
+                True    : TRUE,
+                False   : FALSE,
+                None    : NIL,
+            }.get(result, result)
 
         return wrapped
 
@@ -148,13 +154,7 @@ class SpecialForm(Value):
         return self.value(pattern,environment)
 
 def apply(function_or_special_form, pattern, environment):
-    if isinstance(function_or_special_form, SpecialForm):
-        return function_or_special_form(pattern, environment)
-
-    if hasattr(function_or_special_form, '__call__'):
-        return function_or_special_form(*map(lambda arg : evaluate(arg, environment), pattern))
-
-    assert False
+    return function_or_special_form(pattern, environment)
 
 def evaluate(expression, environment):
     if isinstance(expression, Number) or isinstance(expression, String):
@@ -188,7 +188,7 @@ def _assert(*arguments):
         raise Exception("TypeError: `assert` expected Boolean assertion but received {}".format(type(assertion)))
 
     if assertion[-1] is TRUE:
-        return NIL
+        return None
 
     if assertion[-1] is FALSE:
         raise Exception("AssertionError: {}".format(description))
@@ -261,11 +261,6 @@ def defined_p(pattern, environment):
 
     return TRUE if pattern[0].value in environment else FALSE
 
-@py_to_mini
-def wrapped_print(*args):
-    print(*args)
-    return NIL
-
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -273,10 +268,10 @@ builtins = {
     'nil'       : NIL,
 
     # Builtin functions
-    '='         : lambda l,r : TRUE if l == r else FALSE,
+    '='         : py_to_mini(lambda l,r : l == r),
     'assert'    : _assert,
     'not'       : _not,
-    'print'     : wrapped_print,
+    'print'     : py_to_mini(print),
 
     # Builtin special forms
     'define'    : define,
