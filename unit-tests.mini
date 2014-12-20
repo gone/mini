@@ -24,7 +24,8 @@
 (assert "`define` adds identifier to environment" previously-undefined-identifier)
 
 #`defined?` tests
-(assert "`defined` returns false for undefined identifier"
+(assert "`defined?` returns true for defined identifier" (defined? assert))
+(assert "`defined?` returns false for undefined identifier"
         (not (defined? undefined-identifier)))
 
 # `not` tests
