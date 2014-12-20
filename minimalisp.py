@@ -163,7 +163,6 @@ def evaluate(expression, environment):
 
     assert False
 
-@py_to_mini
 def _assert(*arguments):
     if len(arguments) == 0:
         raise Exception("ArgumentError: assert expects 1 or more arguments, received none")
@@ -204,7 +203,6 @@ def throws(pattern, environment):
         exception_type, message = e.message.split(':',1)
         return TRUE if exception_type == exception.value else FALSE
 
-@py_to_mini
 def _not(argument):
     if not isinstance(argument, Boolean):
         raise Exception('TypeError: Expected Boolean but received {}'.format(type(argument)))
@@ -258,8 +256,8 @@ builtins = {
 
     # Builtin functions
     '='         : py_to_mini(lambda l,r : l == r),
-    'assert'    : _assert,
-    'not'       : _not,
+    'assert'    : py_to_mini(_assert),
+    'not'       : py_to_mini(_not),
     'print'     : py_to_mini(print),
 
     # Builtin special forms
