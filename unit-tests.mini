@@ -1,3 +1,7 @@
+# feature tests
+(assert "Evaluating undefined variable throws exception"
+        (throws? undefined-variable "NameError"))
+
 # `=` tests
 (assert "`=` returns true for equal numbers" (= 0 0))
 (assert "`=` returns false for non-equal numbers" (not (= 0 1)))

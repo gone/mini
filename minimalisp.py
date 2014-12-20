@@ -151,7 +151,10 @@ def evaluate(expression, environment):
         return expression
 
     if isinstance(expression, Identifier):
-        return environment[expression.value]
+        if expression.value in environment:
+            return environment[expression.value]
+
+        raise Exception('NameError: Undefined variable {}'.format(expression.value))
 
     if isinstance(expression, SExpression):
         return apply(evaluate(expression.value[0],environment), expression.value[1:], environment)
