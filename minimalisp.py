@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import re
 import traceback
+import types
 
 
 class Value(object):
@@ -129,6 +130,15 @@ class Boolean(Value):
 TRUE = Boolean(True)
 FALSE = Boolean(False)
 
+def py_to_mini(py_object):
+    if isinstance(py_object,types.FunctionType):
+        def wrapped(*args, **kwargs):
+            return py_object(*args,**kwargs)
+
+        return wrapped
+
+    assert False
+
 class SpecialForm(Value):
     def __init__(self,value,**kwargs):
         super(SpecialForm,self).__init__(**kwargs)
@@ -161,6 +171,7 @@ def evaluate(expression, environment):
 
     assert False
 
+@py_to_mini
 def _assert(*arguments):
     if len(arguments) == 0:
         raise Exception("ArgumentError: assert expects 1 or more arguments, received none")
@@ -202,6 +213,7 @@ def throws(pattern, environment):
         exception_type, message = e.message.split(':',1)
         return TRUE if exception_type == exception.value else FALSE
 
+@py_to_mini
 def _not(argument):
     if not isinstance(argument, Boolean):
         raise Exception('TypeError: Expected Boolean but received {}'.format(type(argument)))
@@ -249,6 +261,7 @@ def defined_p(pattern, environment):
 
     return TRUE if pattern[0].value in environment else FALSE
 
+@py_to_mini
 def wrapped_print(*args):
     print(*args)
     return NIL
