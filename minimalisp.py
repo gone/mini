@@ -60,9 +60,6 @@ token_regex = re.compile(r'''(?mx)
     (?P<identifier>[A-Za-z\?\-\+\*/=]+)
     )''')
 
-def parse_string(string):
-    return string[1:-1]
-
 def parse(source):
     stack = []
     result = []
@@ -93,7 +90,7 @@ def parse(source):
 
         elif match.group('string'):
             result.append(String(
-                parse_string(match.group('string')),
+                match.group('string')[1:-1],
                 start = match.start('string'),
                 end = match.end('string')))
 
@@ -211,6 +208,14 @@ def _not(argument):
 
     assert False
 
+def evaluate_expressions(expressions, environment):
+    result = NIL
+
+    for expression in expressions:
+        result = evaluate(expression, environment)
+
+    return result
+
 @SpecialForm
 def define(pattern, environment):
     if len(pattern) < 2:
@@ -222,10 +227,7 @@ def define(pattern, environment):
     if isinstance(head, Identifier):
         identifier = head.value
 
-        for expression in body:
-            result = evaluate(expression, environment)
-
-        environment[identifier] = result
+        environment[identifier] = evaluate_expressions(body, environment)
 
         return NIL
 
@@ -262,12 +264,7 @@ if __name__ == '__main__':
             source = raw_input('>>> ')
             
             try:
-                expressions = parse(source)
-        
-                for expression in expressions:
-                    result = evaluate(expression, environment)
-        
-                print result
+                print evaluate_expressions(parse(source), environment)
         
             except:
                 traceback.print_exc()
@@ -280,12 +277,7 @@ if __name__ == '__main__':
                 source = f.read()
 
             try:
-                expressions = parse(source)
-
-                for expression in expressions:
-                    result = evaluate(expression, environment)
-
-                print result
+                print evaluate_expressions(parse(source), environment)
 
             except:
                 traceback.print_exc()

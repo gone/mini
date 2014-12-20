@@ -15,9 +15,9 @@
 (assert "`assert` throws TypeError for non-boolean assertion"
         (throws? (assert 1) "TypeError"))
 
-#`define` tests
-(define unknown-identifier true)
-(assert "`define` adds identifier to environment" unknown-identifier)
+# `define` tests
+(define previously-undefined-identifier true)
+(assert "`define` adds identifier to environment" previously-undefined-identifier)
 
 # `not` tests
 (assert "`not` returns false for true" (= (not true) false))
