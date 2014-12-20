@@ -252,6 +252,23 @@ def defined_p(pattern, environment):
 
     return TRUE if pattern[0].value in environment else FALSE
 
+def _if(pattern, environment):
+    if not len(pattern) in [2,3]:
+        raise Exception("ArgumentError")
+
+    condition = pattern[0]
+    if_result_true = pattern[1]
+    if_result_false = pattern[2]
+
+    result = evaluate(condition, environment)
+
+    if result is TRUE:
+        return evaluate(if_result_true, environment)
+    if result is FALSE:
+        return evaluate(if_result_false, environment)
+
+    raise Exception("TypeError: `if` expects boolean, received {}".format(type(result)))
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -267,6 +284,7 @@ builtins = {
     'assert'    : _assert,
     'define'    : define,
     'defined?'  : defined_p,
+    'if'        : _if,
     'throws?'   : throws,
 }
 

@@ -30,10 +30,20 @@
         (define previously-undefined-identifier true)
         previously-undefined-identifier)
 
-#`defined?` tests
+# `defined?` tests
 (assert "`defined?` returns true for defined identifier" (defined? assert))
 (assert "`defined?` returns false for undefined identifier"
         (not (defined? undefined-identifier)))
+
+# `if` tests
+(assert "`if` returns second argument for true condition"
+        (if true true false))
+(assert "`if` returns third argument for false condition"
+        (if false false true))
+(assert "`if` doesn't execute third argument for true condition"
+        (if true true undefined-identifier))
+(assert "`if` doesn't execute second argument for false condition"
+        (if false undefined-identifier true))
 
 # `not` tests
 (assert "`not` returns false for true" (= (not true) false))
