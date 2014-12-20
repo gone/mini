@@ -18,6 +18,7 @@
         (throws? (assert false) "AssertionError"))
 (assert "`assert` throws TypeError for non-boolean assertion"
         (throws? (assert 1) "TypeError"))
+(assert "`assert` can take multiple arguments" false true)
 
 # `define` tests
 (define previously-undefined-identifier true)

@@ -162,24 +162,24 @@ def evaluate(expression, environment):
     assert False
 
 def _assert(*arguments):
-    if len(arguments) < 1 or len(arguments) > 2:
-        raise Exception("assert expects 1 or 2 arguments, received {}".format(len(arguments)))
+    if len(arguments) == 0:
+        raise Exception("ArgumentError: assert expects 1 or more arguments, received none")
 
-    if len(arguments) == 2:
-        description = arguments[0].value
-        assertion = arguments[1]
+    if len(arguments) == 1:
+        description = 'assertion failed'
+        assertion = arguments
 
     else:
-        description = 'assertion failed'
-        assertion = arguments[0]
+        description = arguments[0].value
+        assertion = arguments[1:]
 
-    if not isinstance(assertion,Boolean):
+    if not isinstance(assertion[-1],Boolean):
         raise Exception("TypeError: `assert` expected Boolean assertion but received {}".format(type(assertion)))
 
-    if assertion is TRUE:
+    if assertion[-1] is TRUE:
         return NIL
 
-    if assertion is FALSE:
+    if assertion[-1] is FALSE:
         raise Exception("AssertionError: {}".format(description))
     
     assert False
