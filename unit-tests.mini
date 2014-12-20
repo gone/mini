@@ -1,6 +1,6 @@
-# feature tests
+# feature tests: variables
 (assert "Evaluating undefined variable throws exception"
-        (throws? undefined-variable "NameError"))
+        (throws? undefined-identifier "UndefinedIdentifierError"))
 
 # `=` tests
 (assert "`=` returns true for equal numbers" (= 0 0))
@@ -22,6 +22,10 @@
 # `define` tests
 (define previously-undefined-identifier true)
 (assert "`define` adds identifier to environment" previously-undefined-identifier)
+
+#`defined?` tests
+(assert "`defined` returns false for undefined identifier"
+        (not (defined? undefined-identifier)))
 
 # `not` tests
 (assert "`not` returns false for true" (= (not true) false))

@@ -154,7 +154,7 @@ def evaluate(expression, environment):
         if expression.value in environment:
             return environment[expression.value]
 
-        raise Exception('NameError: Undefined variable {}'.format(expression.value))
+        raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.value))
 
     if isinstance(expression, SExpression):
         return apply(evaluate(expression.value[0],environment), expression.value[1:], environment)
@@ -242,6 +242,13 @@ def define(pattern, environment):
 
     raise Exception('TypeError: `define` expected Identifier or SExpression, got {}'.format(type(head)))
 
+@SpecialForm
+def defined_p(pattern, environment):
+    if len(pattern) != 1:
+        raise Exception("ArgumentError: `defined?` expects 1 argument, received {}".format(len(pattern)))
+
+    return TRUE if pattern[0].value in environment else FALSE
+
 def wrapped_print(*args):
     print(*args)
     return NIL
@@ -260,6 +267,7 @@ builtins = {
 
     # Builtin special forms
     'define'    : define,
+    'defined?'  : defined_p,
     'throws?'   : throws,
 }
 
