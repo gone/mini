@@ -36,6 +36,9 @@
 (assert "`define` adds identifier to environment"
         (define previously-undefined-identifier true)
         previously-undefined-identifier)
+(assert "`define` throws exception for already-defined variable"
+        (define already-defined-identifier :value)
+        (throws? (define already-defined-identifier :another-value) "AlreadyDefinedError"))
 
 # `defined?` tests
 (assert "`defined?` returns true for defined identifier" (defined? assert))

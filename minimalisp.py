@@ -276,6 +276,9 @@ def define(pattern, environment):
     if isinstance(head, Identifier):
         identifier = head.value
 
+        if identifier in environment:
+            raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
+
         environment[identifier] = evaluate_expressions(body, environment)
 
         return NIL
