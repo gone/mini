@@ -64,6 +64,9 @@ class Keyword(Atom):
     def __eq__(self,other):
         return self is other
 
+    def __repr__(self):
+        return self.string
+
 def create_keyword(value,**kwargs):
     if value in KEYWORDS:
         return KEYWORDS[value]
@@ -150,6 +153,18 @@ class Boolean(Value):
 
     def __unicode__(self):
         return "true" if self.value else "false"
+
+class Map(Value):
+    def __init__(self, value, **kwargs):
+        super(Map,self).__init__(**kwargs)
+        self.value = value
+        self.call = py_to_mini(lambda key : self.value[key])
+
+    def __repr__(self):
+        return repr(self.value)
+    
+    def __call__(self, pattern, environment):
+        return self.call(pattern,environment)
 
 TRUE = Boolean(True)
 FALSE = Boolean(False)
@@ -293,6 +308,11 @@ def _if(pattern, environment):
 
     raise Exception("TypeError: `if` expects boolean, received {}".format(type(result)))
 
+def _map(*arguments):
+    if len(arguments) % 2 != 0:
+        raise Exception("ArgumentError: `map` takes an even number of arguments")
+    return Map(dict((arguments[i:i+2] for i in range(0, len(arguments), 2))))
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -303,6 +323,7 @@ builtins = {
     '='         : py_to_mini(lambda l,r : l == r),
     'not'       : py_to_mini(_not),
     'print'     : py_to_mini(print),
+    'map'       : py_to_mini(_map),
 
     # Builtin special forms
     'assert'    : _assert,

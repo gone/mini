@@ -52,6 +52,10 @@
 (assert "`if` doesn't execute second argument for false condition"
         (if false undefined-identifier true))
 
+# `map` tests
+(assert "`map` creates a callable map"
+        ((map :keyword true) :keyword))
+
 # `not` tests
 (assert "`not` returns false for true" (= (not true) false))
 (assert "`not` returns true for false" (= (not false) true))
