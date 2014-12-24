@@ -316,6 +316,46 @@ def _map(*arguments):
         raise Exception("ArgumentError: `map` takes an even number of arguments")
     return Map(dict((arguments[i:i+2] for i in range(0, len(arguments), 2))))
 
+# This is vau from John N. Shutt's seminal paper
+# https://www.wpi.edu/Pubs/ETD/Available/etd-090110-124904/unrestricted/jshutt.pdf
+# While Greek letters are appropriate for an academic, theoretical context, they make for
+# poor variable names, so this is tentatively named `operative`
+def operative(pattern, environment):
+    if not isinstance(pattern[0],SExpression):
+        raise Exception("ArgumentError: The first argument to `operative` should be an SExpression")
+
+    if not all([isinstance(arg, SExpression) for arg in pattern[0].value]):
+        raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
+
+    if not isinstance(pattern[1],Identifier):
+        raise Exception("ArgumentError: The second argument to `operative` should be an identifer")
+
+    argument_identifiers = [ai.value for ai in pattern[0].value]
+    calling_environment_identifier = pattern[1].value
+
+    existing = set()
+    for ai in argument_identifiers:
+        if ai in existing:
+            raise Exception("ArgumentError: Argument `{}` already defined".format(ai))
+        if calling_environment_identifier == ai:
+            raise Exception("ArgumentError: Argument `{}` may not be the same as calling environment identifier".format(ai))
+        existing.add(ai)
+
+    local_environment = dict(environment)
+    
+    def result(calling_pattern,calling_environment):
+        if not len(calling_pattern) == len(argument_identifiers):
+            raise Exception("ArgumentError: operative expected {} arguments, received {}".format(len(argument_identifiers),len(calling_pattern)))
+
+        for i in range(len(argument_identifiers)):
+            local_environment[argument_identifiers[i]] = calling_pattern[i]
+
+        local_environment[calling_environment_identifier] = Map(calling_environment)
+
+        return evaluate_expressions(pattern[2:], local_environment)
+
+    return result
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -333,6 +373,7 @@ builtins = {
     'define'    : define,
     'defined?'  : defined_p,
     'if'        : _if,
+    'operative' : operative,
     'throws?'   : throws,
 }
 
