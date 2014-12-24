@@ -441,8 +441,8 @@ if __name__ == '__main__':
     arguments = sys.argv[1:]
 
     predefineds = nest(dict(builtins))
-
     predefineds_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'predefineds.mini')
+
     with open(predefineds_filename, 'r') as predefineds_file:
         predefineds_source = predefineds_file.read()
 
@@ -465,14 +465,17 @@ if __name__ == '__main__':
                 traceback.print_exc()
 
     else:
-        for filename in arguments:
-            environment = nest(dict(predefineds))
-            
-            with open(filename,'r') as f:
-                source = f.read()
+        filename = arguments[0]
+        arguments = arguments[1:]
 
-            try:
-                print(evaluate_expressions(parse(source), environment))
+        environment = nest(dict(predefineds))
+        environment['__file__'] = os.path.join(os.path.realpath(filename))
+        
+        with open(filename,'r') as f:
+            source = f.read()
 
-            except:
-                traceback.print_exc()
+        try:
+            print(evaluate_expressions(parse(source), environment))
+
+        except:
+            traceback.print_exc()
