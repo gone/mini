@@ -81,8 +81,8 @@ token_regex = re.compile(r'''(?mx)
     (?P<close_parenthese>\))|
     (?P<number>\-?\d+\.\d+|\-?\d+)|
     (?P<string>"[^"]*")|
-    (?P<identifier>[A-Za-z\?\-\+\*/=]+)|
-    (?P<keyword>\:[A-Za-z\?\-\+\*/=]*)
+    (?P<identifier>[_A-Za-z\?\-\+\*/=]+)|
+    (?P<keyword>\:[_A-Za-z\?\-\+\*/=]*)
     )''')
 
 def parse(source):
@@ -344,7 +344,7 @@ def operative(pattern, environment):
     if not isinstance(pattern[0],SExpression):
         raise Exception("ArgumentError: The first argument to `operative` should be an SExpression")
 
-    if not all([isinstance(arg, SExpression) for arg in pattern[0].value]):
+    if not all([isinstance(arg, Identifier) for arg in pattern[0].value]):
         raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
 
     if not isinstance(pattern[1],Identifier):
@@ -398,12 +398,25 @@ builtins = {
 }
 
 if __name__ == '__main__':
+    import os.path
     import sys
 
     arguments = sys.argv[1:]
 
+    predefineds = nest(dict(builtins))
+
+    predefineds_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'predefineds.mini')
+    with open(predefineds_filename, 'r') as predefineds_file:
+        predefineds_source = predefineds_file.read()
+
+        try:
+            evaluate_expressions(parse(predefineds_source), predefineds)
+
+        except:
+            traceback.print_exc()
+
     if len(arguments) == 0:
-        environment = nest(builtins)
+        environment = nest(dict(predefineds))
         
         while True:
             source = raw_input('>>> ')
@@ -416,7 +429,7 @@ if __name__ == '__main__':
 
     else:
         for filename in arguments:
-            environment = nest(builtins)
+            environment = nest(dict(predefineds))
             
             with open(filename,'r') as f:
                 source = f.read()
