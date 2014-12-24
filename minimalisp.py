@@ -192,8 +192,11 @@ def evaluate(expression, environment):
         return expression
 
     if isinstance(expression, Identifier):
-        if expression.value in environment:
-            return environment[expression.value]
+        while environment != None:
+            if expression.value in environment:
+                return environment[expression.value]
+
+            environment = environment.get('__parent__')
 
         raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.value))
 
@@ -227,7 +230,7 @@ def _assert(pattern, environment):
         assert False
 
     # Execute in nested scope
-    return py_to_mini(assert_internal)(pattern, dict(environment))
+    return py_to_mini(assert_internal)(pattern, nest(environment))
 
 def throws(pattern, environment):
     if len(pattern) != 2:
@@ -266,6 +269,15 @@ def evaluate_expressions(expressions, environment):
 
     return result
 
+def is_defined(identifier,environment):
+    while not environment == None:
+        if identifier in environment:
+            return True
+
+        environment = environment.get('__parent__')
+
+    return False
+
 def define(pattern, environment):
     if len(pattern) < 2:
         raise Exception('DefineError')
@@ -276,7 +288,7 @@ def define(pattern, environment):
     if isinstance(head, Identifier):
         identifier = head.value
 
-        if identifier in environment:
+        if is_defined(identifier, environment):
             raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
 
         environment[identifier] = evaluate_expressions(body, environment)
@@ -292,7 +304,10 @@ def defined_p(pattern, environment):
     if len(pattern) != 1:
         raise Exception("ArgumentError: `defined?` expects 1 argument, received {}".format(len(pattern)))
 
-    return TRUE if pattern[0].value in environment else FALSE
+    if not isinstance(pattern[0], Identifier):
+        raise Exception("TypeError")
+
+    return TRUE if is_defined(pattern[0].value, environment) else FALSE
 
 def _if(pattern, environment):
     if not len(pattern) in [2,3]:
@@ -315,6 +330,11 @@ def _map(*arguments):
     if len(arguments) % 2 != 0:
         raise Exception("ArgumentError: `map` takes an even number of arguments")
     return Map(dict((arguments[i:i+2] for i in range(0, len(arguments), 2))))
+
+def nest(environment):
+    return {
+        '__parent__'    : environment,
+    }
 
 # This is vau from John N. Shutt's seminal paper
 # https://www.wpi.edu/Pubs/ETD/Available/etd-090110-124904/unrestricted/jshutt.pdf
@@ -341,7 +361,7 @@ def operative(pattern, environment):
             raise Exception("ArgumentError: Argument `{}` may not be the same as calling environment identifier".format(ai))
         existing.add(ai)
 
-    local_environment = dict(environment)
+    local_environment = nest(environment)
     
     def result(calling_pattern,calling_environment):
         if not len(calling_pattern) == len(argument_identifiers):
@@ -383,7 +403,7 @@ if __name__ == '__main__':
     arguments = sys.argv[1:]
 
     if len(arguments) == 0:
-        environment = dict(builtins.items())
+        environment = nest(builtins)
         
         while True:
             source = raw_input('>>> ')
@@ -396,7 +416,7 @@ if __name__ == '__main__':
 
     else:
         for filename in arguments:
-            environment = dict(builtins.items())
+            environment = nest(builtins)
             
             with open(filename,'r') as f:
                 source = f.read()
