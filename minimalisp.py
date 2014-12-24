@@ -326,7 +326,7 @@ def _if(pattern, environment):
 
     raise Exception("TypeError: `if` expects boolean, received {}".format(type(result)))
 
-def _map(*arguments):
+def mapping(*arguments):
     if len(arguments) % 2 != 0:
         raise Exception("ArgumentError: `map` takes an even number of arguments")
     return Map(dict((arguments[i:i+2] for i in range(0, len(arguments), 2))))
@@ -370,7 +370,7 @@ def operative(pattern, environment):
         for i in range(len(argument_identifiers)):
             local_environment[argument_identifiers[i]] = calling_pattern[i]
 
-        local_environment[calling_environment_identifier] = Map(calling_environment)
+        local_environment[calling_environment_identifier] = calling_environment
 
         return evaluate_expressions(pattern[2:], local_environment)
 
@@ -384,9 +384,10 @@ builtins = {
 
     # Builtin functions
     '='         : py_to_mini(lambda l,r : l == r),
+    'evaluate'  : py_to_mini(evaluate),
     'not'       : py_to_mini(_not),
     'print'     : py_to_mini(print),
-    'map'       : py_to_mini(_map),
+    'mapping'   : py_to_mini(mapping),
 
     # Builtin special forms
     'assert'    : _assert,

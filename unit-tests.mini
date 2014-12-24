@@ -55,15 +55,25 @@
 (assert "`if` doesn't execute second argument for false condition"
         (if false undefined-identifier true))
 
-# `map` tests
-(assert "`map` creates a callable map"
-        ((map :keyword true) :keyword))
+# `mapping` tests
+(assert "`mapping` creates a callable mapping"
+        ((mapping :keyword true) :keyword))
 
 # `not` tests
 (assert "`not` returns false for true" (= (not true) false))
 (assert "`not` returns true for false" (= (not false) true))
 (assert "`not` throws TypeError for non-boolean argument"
         (throws? (not 1) "TypeError"))
+
+# `operative` tests
+(assert "`operative` creates callable operative"
+        ((operative () env true)))
+(assert "`operative` receives the environment"
+        (define receives-environment (operative () env (evaluate (quote true-identifier) env)))
+        (define true-identifier true)
+        (receives-environment))
+(assert "`operative` receives arguments"
+        ((operative (arg) env (evaluate arg env)) true))
 
 # `throws?` tests
 (assert "`throws?` returns false when no exception is thrown"
