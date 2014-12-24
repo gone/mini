@@ -184,8 +184,11 @@ def py_to_mini(py_object):
 
     assert False
 
-def apply(function_or_special_form, pattern, environment):
-    return function_or_special_form(pattern, environment)
+def apply(applicative, pattern, environment):
+    if isinstance(applicative,dict):
+        applicative = py_to_mini(lambda key : applicative[key])
+
+    return applicative(pattern, environment)
 
 def evaluate(expression, environment):
     if isinstance(expression, Number) or isinstance(expression, String) or isinstance(expression,Keyword):
@@ -331,6 +334,34 @@ def mapping(*arguments):
         raise Exception("ArgumentError: `map` takes an even number of arguments")
     return Map(dict((arguments[i:i+2] for i in range(0, len(arguments), 2))))
 
+def associate(mapping, key, value):
+    result = dict(mapping)
+    result[key] = value
+    return result
+
+def dissociate(mapping, key):
+    result = dict(mapping)
+    del result[key]
+    return result
+
+def construct(head,tail):
+    return (head, tail)
+
+def first(arg):
+    if not isinstance(arg, tuple):
+        raise Exception("TypeError")
+    return arg[0]
+
+def rest(arg):
+    if not isinstance(arg, tuple):
+        raise Exception("TypeError")
+    return arg[1]
+
+def _list(*args):
+    if len(args) == 0:
+        return NIL
+    return (args[0], _list(args[1:]))
+
 def nest(environment):
     return {
         '__parent__'    : environment,
@@ -384,10 +415,15 @@ builtins = {
 
     # Builtin functions
     '='         : py_to_mini(lambda l,r : l == r),
+    'associate' : py_to_mini(associate),
+    'dissociate': py_to_mini(dissociate),
     'evaluate'  : py_to_mini(evaluate),
+    'first'     : py_to_mini(first),
+    'list'      : py_to_mini(_list),
     'not'       : py_to_mini(_not),
     'print'     : py_to_mini(print),
     'mapping'   : py_to_mini(mapping),
+    'rest'      : py_to_mini(rest),
 
     # Builtin special forms
     'assert'    : _assert,
