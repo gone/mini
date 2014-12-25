@@ -283,7 +283,7 @@ def is_defined(identifier,environment):
 
 def define(pattern, environment):
     if len(pattern) < 2:
-        raise Exception('DefineError')
+        raise Exception('DefineError: `define` expected two arguments, received {}'.format(len(pattern)))
 
     head = pattern[0]
     body = pattern[1:]
@@ -436,6 +436,7 @@ builtins = {
     'list'      : py_to_mini(_list),
     'not'       : py_to_mini(_not),
     'print'     : py_to_mini(print),
+    'prompt'    : py_to_mini(raw_input),
     'mapping'   : py_to_mini(mapping),
     'rest'      : py_to_mini(rest),
 
