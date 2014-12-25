@@ -421,6 +421,34 @@ def operative(pattern, environment):
 
     return result
 
+# This is lambda, but called function
+def function(pattern, environment):
+    if not isinstance(pattern[0],SExpression):
+        raise Exception("ArgumentError: The first argument to `operative` should be an SExpression")
+
+    argument_identifiers = [ai.value for ai in pattern[0].value]
+
+    existing = set()
+    for ai in argument_identifiers:
+        if ai in existing:
+            raise Exception("ArgumentError: Argument `{}` already defined".format(ai))
+        if calling_environment_identifier == ai:
+            raise Exception("ArgumentError: Argument `{}` may not be the same as calling environment identifier".format(ai))
+        existing.add(ai)
+
+    local_environment = nest(environment)
+    
+    def result(calling_pattern, calling_environment):
+        if not len(calling_pattern) == len(argument_identifiers):
+            raise Exception("ArgumentError: operative expected {} arguments, received {}".format(len(argument_identifiers),len(calling_pattern)))
+
+        for i in range(len(argument_identifiers)):
+            local_environment[argument_identifiers[i]] = evaluate(calling_pattern[i], calling_environment)
+
+        return evaluate_expressions(pattern[1:], local_environment)
+
+    return result
+
 def read_file(filename):
     with open(filename, 'r') as f:
         return f.read()
