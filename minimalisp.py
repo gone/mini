@@ -356,6 +356,12 @@ def first(arg):
 
     raise Exception("TypeError")
 
+def empty_p(collection):
+    if isinstance(collection, SExpression):
+        return len(collection.value) == 0
+    
+    assert False
+
 def rest(arg):
     if not isinstance(arg, tuple):
         return arg[1]

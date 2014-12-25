@@ -74,6 +74,10 @@
         (receives-environment))
 (assert "`operative` receives arguments"
         ((operative (arg) env (evaluate arg env)) true))
+(assert "`operative` executes in its own environment"
+        ((operative () env
+                    (define should-not-be-defined false)))
+        (not (defined? should-not-be-defined)))
 
 # `throws?` tests
 (assert "`throws?` returns false when no exception is thrown"
