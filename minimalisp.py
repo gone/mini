@@ -421,6 +421,17 @@ def operative(pattern, environment):
 
     return result
 
+def read_file(filename):
+    with open(filename, 'r') as f:
+        return f.read()
+
+def write_file(filename, string):
+    with open(filename, 'w') as f:
+        f.write(string)
+
+def is_empty(collection):
+    return len(collection) == 0
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -432,13 +443,16 @@ builtins = {
     'associate' : py_to_mini(associate),
     'dissociate': py_to_mini(dissociate),
     'evaluate'  : py_to_mini(evaluate),
+    'empty?'    : py_to_mini(is_empty),
     'first'     : py_to_mini(first),
     'list'      : py_to_mini(_list),
     'not'       : py_to_mini(_not),
     'print'     : py_to_mini(print),
     'prompt'    : py_to_mini(raw_input),
     'mapping'   : py_to_mini(mapping),
+    'read-file' : py_to_mini(read_file),
     'rest'      : py_to_mini(rest),
+    'write-file': py_to_mini(write_file),
 
     # Builtin special forms
     'assert'    : _assert,

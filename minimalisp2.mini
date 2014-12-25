@@ -1,0 +1,3 @@
+(if (empty? __arguments__)
+    (print "repl")
+    (print (read-file (first __arguments__))))
