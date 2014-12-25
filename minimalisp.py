@@ -485,6 +485,7 @@ if __name__ == '__main__':
 
         environment = nest(dict(predefineds))
         environment['__file__'] = os.path.join(os.path.realpath(filename))
+        environment['__arguments__'] = tuple(arguments)
         
         with open(filename,'r') as f:
             source = f.read()
