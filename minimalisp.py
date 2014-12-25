@@ -348,14 +348,22 @@ def construct(head,tail):
     return (head, tail)
 
 def first(arg):
-    if not isinstance(arg, tuple):
-        raise Exception("TypeError")
-    return arg[0]
+    if isinstance(arg, tuple):
+        return arg[0]
+
+    if isinstance(arg, SExpression):
+        return arg.value[0]
+
+    raise Exception("TypeError")
 
 def rest(arg):
     if not isinstance(arg, tuple):
-        raise Exception("TypeError")
-    return arg[1]
+        return arg[1]
+
+    if isinstance(arg, SExpression):
+        return SExpression(arg.value[1:])
+
+    raise Exception("TypeError")
 
 def _list(*args):
     if len(args) == 0:

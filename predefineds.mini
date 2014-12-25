@@ -1,1 +1,15 @@
 (define quote (operative (quoted-expression) _ quoted-expression))
+
+(define nil? (operative (expression) env
+                        (= (evaluate expression env) nil)))
+
+(define left-fold (operative (collection aggregation f) env
+                             (define local-collection (evaluate collection env))
+                             (define local-aggregation (evaluate aggregation env))
+                             (define local-f (evaluate f env))
+                             
+                             (if (empty? local-collection)
+                                local-aggregation
+                                (left-fold (rest local-collection)
+                                           (f aggregation (first local-collection))
+                                           f))))
