@@ -363,8 +363,8 @@ def empty_p(collection):
     assert False
 
 def rest(arg):
-    if not isinstance(arg, tuple):
-        return arg[1]
+    if isinstance(arg, tuple):
+        return arg[:1]
 
     if isinstance(arg, SExpression):
         return SExpression(arg.value[1:])
@@ -432,8 +432,6 @@ def function(pattern, environment):
     for ai in argument_identifiers:
         if ai in existing:
             raise Exception("ArgumentError: Argument `{}` already defined".format(ai))
-        if calling_environment_identifier == ai:
-            raise Exception("ArgumentError: Argument `{}` may not be the same as calling environment identifier".format(ai))
         existing.add(ai)
 
     local_environment = nest(environment)
@@ -486,6 +484,7 @@ builtins = {
     'assert'    : _assert,
     'define'    : define,
     'defined?'  : defined_p,
+    'function'  : function,
     'if'        : _if,
     'operative' : operative,
     'throws?'   : throws,
