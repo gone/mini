@@ -372,9 +372,7 @@ def rest(arg):
     raise Exception("TypeError")
 
 def _list(*args):
-    if len(args) == 0:
-        return NIL
-    return (args[0], _list(args[1:]))
+    return tuple(args)
 
 def nest(environment):
     return {
