@@ -56,13 +56,6 @@ class Atom(Value):
     def __unicode__(self):
         return unicode(self.value)
 
-class Number(Atom):
-    def __init__(self,value,**kwargs):
-        super(Number,self).__init__(value,**kwargs)
-
-    def __eq__(self,other):
-        return self.value == other.value
-
 class Identifier(Atom):
     def __init__(self,value,**kwargs):
         super(Identifier,self).__init__(value,**kwargs)
@@ -121,7 +114,7 @@ def parse(source):
             v = float(match.group('number'))
             if v.is_integer(): v = int(v)
 
-            result.append(Number(
+            result.append(MiniObject(
                 v,
                 start = match.start('number'),
                 end = match.end('number')))
@@ -182,17 +175,20 @@ class Map(Value):
 TRUE = Boolean(True)
 FALSE = Boolean(False)
 
+def is_number(arg):
+    if isinstance(arg, float):
+        return True
+
+    # isinstance(True, int) returns True
+    return isinstance(arg, int) and not isinstance(arg, bool)
+
 def py_to_mini(py_object):
     if isinstance(py_object,types.FunctionType) or isinstance(py_object,types.BuiltinFunctionType):
         def wrapped(pattern, environment):
             result = py_object(*map(lambda arg : evaluate(arg,environment),pattern))
 
-            if isinstance(result, float):
-                return Number(result)
-
-            # isinstance(True, int) returns True
-            if isinstance(result, int) and not isinstance(result, bool):
-                return Number(result)
+            if is_number(result):
+                return MiniObject(result)
 
             return {
                 True    : TRUE,
@@ -211,11 +207,11 @@ def apply(applicative, pattern, environment):
     return applicative(pattern, environment)
 
 def evaluate(expression, environment):
-    if isinstance(expression, Number) or isinstance(expression,Keyword):
+    if isinstance(expression,Keyword):
         return expression
 
     if isinstance(expression, MiniObject):
-        if isinstance(expression.py_object, str):
+        if isinstance(expression.py_object, str) or is_number(expression.py_object):
             return expression
 
     if isinstance(expression, Identifier):
@@ -246,21 +242,24 @@ def concatenate(l,r):
 
     raise Exception('TypeError')
 
+def is_integer(arg):
+    return isinstance(arg, int) and not isinstance(arg, bool)
+
 def slice(collection, start, end):
-    if isinstance(start,Number) and isinstance(end, Number) and isinstance(start.value, int) and isinstance(end.value,int):
+    if isinstance(start,MiniObject) and isinstance(end, MiniObject) and is_integer(start.py_object) and is_integer(end.py_object):
         start = start.value
         end = end.value
 
         if isinstance(collection.py_object, str):
             return MiniObject(collection.py_object[start:end])
 
-    if isinstance(start,Number) and isinstance(start.value, int) and end is NIL:
+    if isinstance(start,MiniObject) and is_integer(start.py_object) and end is NIL:
         start = start.value
 
         if isinstance(collection.py_object, str):
             return MiniObject(collection.py_object[start:])
 
-    if start is NIL and isinstance(end, Number) and isinstance(end.value,int):
+    if start is NIL and isinstance(end, MiniObject) and is_integer(end.py_object):
         end = end.value
 
         if isinstance(collection.py_object, str):
@@ -520,61 +519,67 @@ def throw(exception):
     raise Exception(exception.value)
 
 def add(l,r):
-    if not isinstance(l, Number) or not isinstance(r, Number):
-        raise Excepion('TypeError')
+    if isinstance(l, MiniObject) and isinstance(r, MiniObject):
+        l = l.py_object
+        r = r.py_object
 
-    l = l.value
-    r = r.value
+        if is_number(l) and is_number(r):
+            return l + r
 
-    return l + r
+    raise Excepion('TypeError')
 
 def subtract(l,r):
-    if not isinstance(l, Number) or not isinstance(r, Number):
-        raise Excepion('TypeError')
+    if isinstance(l, MiniObject) and isinstance(r, MiniObject):
+        l = l.py_object
+        r = r.py_object
 
-    l = l.value
-    r = r.value
+        if is_number(l) and is_number(r):
+            return l - r
 
-    return l - r
+    raise Excepion('TypeError')
 
 def multiply(l,r):
-    if not isinstance(l, Number) or not isinstance(r, Number):
-        raise Excepion('TypeError')
+    if isinstance(l, MiniObject) and isinstance(r, MiniObject):
+        l = l.py_object
+        r = r.py_object
 
-    l = l.value
-    r = r.value
+        if is_number(l) and is_number(r):
+            return l * r
 
-    return l * r
+    raise Excepion('TypeError')
 
 def divide(l,r):
-    if not isinstance(l, Number) or not isinstance(r, Number):
-        raise Excepion('TypeError')
+    if isinstance(l, MiniObject) and isinstance(r, MiniObject):
+        l = l.py_object
+        r = r.py_object
 
-    l = l.value
-    r = r.value
+        if is_number(l) and is_number(r):
+            if isinstance(l,int) and isinstance(r,int) and l % r != 0:
+                l = float(l)
 
-    if isinstance(l,int) and isinstance(r,int) and l % r != 0:
-        l = float(l)
+            return l / r
 
-    return l / r
+    raise Excepion('TypeError')
 
 def idivide(l,r):
-    if not isinstance(l, Number) or not isinstance(r, Number):
-        raise Excepion('TypeError')
+    if isinstance(l, MiniObject) and isinstance(r, MiniObject):
+        l = l.py_object
+        r = r.py_object
 
-    l = l.value
-    r = r.value
+        if is_number(l) and is_number(r):
+            return l // r
 
-    return l // r
+    raise Excepion('TypeError')
 
 def mod(l,r):
-    if not isinstance(l, Number) or not isinstance(r, Number):
-        raise Excepion('TypeError')
+    if isinstance(l, MiniObject) and isinstance(r, MiniObject):
+        l = l.py_object
+        r = r.py_object
 
-    l = l.value
-    r = r.value
+        if is_number(l) and is_number(r):
+            return l % r
 
-    return l % r
+    raise Excepion('TypeError')
 
 def eq(l,r):
     if isinstance(l,MiniObject) and isinstance(r,MiniObject):
@@ -583,8 +588,8 @@ def eq(l,r):
     return l == r
 
 def lt(l,r):
-    if isinstance(l,Number) and isinstance(r,Number):
-        return l.value < r.value
+    if is_number(l.py_object) and is_number(r.py_object):
+        return l.py_object < r.py_object
 
     if isinstance(l.py_object,str) and isinstance(r.py_object,str):
         return l.py_object < r.py_object
@@ -592,8 +597,8 @@ def lt(l,r):
     raise TypeError()
 
 def gt(l,r):
-    if isinstance(l,Number) and isinstance(r,Number):
-        return l.value > r.value
+    if is_number(l.py_object) and is_number(r.py_object):
+        return l.py_object > r.py_object
 
     if isinstance(l.py_object,str) and isinstance(r.py_object,str):
         return l.py_object > r.py_object
