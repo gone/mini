@@ -215,6 +215,13 @@ def evaluate(expression, environment):
 
     assert False
 
+def concatenate(l,r):
+    # TODO Implement ropes: http://citeseer.ist.psu.edu/viewdoc/download?doi=10.1.1.14.9450&rep=rep1&type=pdf
+    if isinstance(l,String) and isinstance(r, String):
+        return String(l.value + r.value)
+
+    raise Exception('TypeError')
+
 def _assert(pattern, environment):
     def assert_internal(*arguments):
         if len(arguments) == 0:
@@ -466,6 +473,33 @@ def is_empty(collection):
 def throw(exception):
     raise Exception(exception.value)
 
+def add(l,r):
+    if not isinstance(l, Number) or not isinstance(r, Number):
+        raise Excepion('TypeError')
+
+    l = l.value
+    r = r.value
+
+    return l + r
+
+def subtract(l,r):
+    if not isinstance(l, Number) or not isinstance(r, Number):
+        raise Excepion('TypeError')
+
+    l = l.value
+    r = r.value
+
+    return l - r
+
+def multiply(l,r):
+    if not isinstance(l, Number) or not isinstance(r, Number):
+        raise Excepion('TypeError')
+
+    l = l.value
+    r = r.value
+
+    return l * r
+
 def divide(l,r):
     if not isinstance(l, Number) or not isinstance(r, Number):
         raise Excepion('TypeError')
@@ -478,6 +512,24 @@ def divide(l,r):
 
     return l / r
 
+def idivide(l,r):
+    if not isinstance(l, Number) or not isinstance(r, Number):
+        raise Excepion('TypeError')
+
+    l = l.value
+    r = r.value
+
+    return l // r
+
+def mod(l,r):
+    if not isinstance(l, Number) or not isinstance(r, Number):
+        raise Excepion('TypeError')
+
+    l = l.value
+    r = r.value
+
+    return l % r
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -486,7 +538,12 @@ builtins = {
 
     # Builtin functions
     '='         : py_to_mini(lambda l,r : l == r),
+    '+'         : py_to_mini(add),
+    '-'         : py_to_mini(subtract),
+    '*'         : py_to_mini(multiply),
     '/'         : py_to_mini(divide),
+    '//'        : py_to_mini(idivide),
+    'mod'       : py_to_mini(mod),
     'associate' : py_to_mini(associate),
     'dissociate': py_to_mini(dissociate),
     'evaluate'  : py_to_mini(evaluate),
