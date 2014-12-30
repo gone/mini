@@ -4,6 +4,26 @@ import re
 import traceback
 import types
 
+class MiniObject(object):
+    def __init__(py_object, **meta):
+        (   "The following python types map to the following mini types:\n"
+            "   bool -> boolean\n"
+            "   str -> string\n"
+            "   int -> integer\n"
+            "   float -> float\n"
+            "   tuple -> list (may contain different types)\n"
+            "   list -> vector (may only contain one type)\n"
+            "   dict -> map\n"
+            "   MiniKeyword -> keyword\n"
+            "mini vectors and maps should be treated as though immutable"
+        )
+        self.py_object = py_object
+        self.meta = meta
+
+class MiniKeyword(object):
+    def __init__(self, string):
+        self.string = string
+
 class Value(object):
     def __init__(self, **kwargs):
         for key in kwargs:
