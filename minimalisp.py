@@ -559,34 +559,76 @@ def mod(l,r):
 
     return l % r
 
+def eq(l,r):
+    return l == r
+
+def lt(l,r):
+    if isinstance(l,Number) and isinstance(r,Number):
+        return l.value < r.value
+
+    if isinstance(l,String) and isinstance(r,String):
+        return l.value < r.value
+
+    raise TypeError()
+
+def gt(l,r):
+    if isinstance(l,Number) and isinstance(r,Number):
+        return l.value > r.value
+
+    if isinstance(l,String) and isinstance(r,String):
+        return l.value > r.value
+
+    raise TypeError()
+
+def le(l,r):
+    return lt(l,r) or eq(l,r)
+
+def ge(l,r):
+    return gt(l,r) or eq(l,r)
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
     'false'     : FALSE,
     'nil'       : NIL,
 
-    # Builtin functions
-    '='         : py_to_mini(lambda l,r : l == r),
-    '+'         : py_to_mini(add),
-    '-'         : py_to_mini(subtract),
-    '*'         : py_to_mini(multiply),
-    '/'         : py_to_mini(divide),
-    '//'        : py_to_mini(idivide),
-    'mod'       : py_to_mini(mod),
-    'associate' : py_to_mini(associate),
-    'dissociate': py_to_mini(dissociate),
-    'evaluate'  : py_to_mini(evaluate),
-    'empty?'    : py_to_mini(is_empty),
-    'first'     : py_to_mini(first),
-    'list'      : py_to_mini(_list),
-    'not'       : py_to_mini(_not),
-    'print'     : py_to_mini(print),
-    'prompt'    : py_to_mini(raw_input),
-    'mapping'   : py_to_mini(mapping),
-    'read-file' : py_to_mini(read_file),
-    'rest'      : py_to_mini(rest),
-    'throw'     : py_to_mini(throw),
-    'write-file': py_to_mini(write_file),
+    # Builtin general functions
+    '='             : py_to_mini(eq),
+    '<'             : py_to_mini(lt),
+    '>'             : py_to_mini(gt),
+    '<='            : py_to_mini(le),
+    '>='            : py_to_mini(ge),
+    'evaluate'      : py_to_mini(evaluate),
+    'print'         : py_to_mini(print),
+    'prompt'        : py_to_mini(raw_input),
+    'read-file'     : py_to_mini(read_file),
+    'throw'         : py_to_mini(throw),
+    'write-file'    : py_to_mini(write_file),
+
+    # Builtin number functions
+    '+'             : py_to_mini(add),
+    '-'             : py_to_mini(subtract),
+    '*'             : py_to_mini(multiply),
+    '/'             : py_to_mini(divide),
+    '//'            : py_to_mini(idivide),
+    'mod'           : py_to_mini(mod),
+
+    # Builtin map functions
+    'associate'     : py_to_mini(associate),
+    'dissociate'    : py_to_mini(dissociate),
+    'mapping'       : py_to_mini(mapping),
+
+    # Builtin collection (string, list, vector) functions
+    'concatenate'   : py_to_mini(concatenate),
+    'empty?'        : py_to_mini(is_empty),
+    'first'         : py_to_mini(first),
+    'length'        : py_to_mini(length),
+    'list'          : py_to_mini(_list),
+    'rest'          : py_to_mini(rest),
+    'slice'         : py_to_mini(slice),
+
+    # Builtin boolean functions
+    'not'           : py_to_mini(_not),
 
     # Builtin special forms
     'assert'    : _assert,

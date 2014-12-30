@@ -1,3 +1,13 @@
+(define and (operative (left right) env
+                       (if (evaluate left env)
+                         (evaluate right env)
+                         false)))
+
+(define or (operative (left right) env
+                      (if (evaluate left env)
+                        true
+                        (evaluate right env))))
+
 (define quote (operative (quoted-expression) _ quoted-expression))
 
 (define nil? (operative (expression) env

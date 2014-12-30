@@ -17,8 +17,29 @@
 (assert "`=` returns false for keyword-to-string comparison (keyword first)"
         (not (= ":keyword" :keyword)))
 
+# `+` tests
+(assert "`+` adds" (= (+ 1 2) 3))
+
+# `-` tests
+(assert "`-` subtracts" (= (- 3 2) 1))
+
+# `*` tests
+(assert "`*` divides" (= (* 2 3) 6))
+
 # `/` tests
-(assert "`/` divides" (= (/ 6 3) 2))
+(assert "`/` divides evenly" (= (/ 6 3) 2))
+(assert "`/` divides fractionally" (= (/ 7 2) 3.5))
+
+# `//` tests
+(assert "`//` divides evenly" (= (// 6 3) 2))
+(assert "`//` divides integrally" (= (// 7 2) 3))
+
+# `and` tests
+(assert "`and` returns false for both false" (not (and false false)))
+(assert "`and` returns false for left false and right true" (not (and false true)))
+(assert "`and` returns false for left true and right false" (not (and true false)))
+(assert "`and` returns true for both true" (and true true))
+(assert "`and` doesn't evalueate second argument if first is false" (not (and false (/ 1 0))))
 
 # `assert` tests
 (assert "`assert` executes without exception for true assertion" true)
@@ -82,6 +103,13 @@
         (not (defined? should-not-be-defined)))
 (assert "`operative` doesn't evaluate its arguments"
         ((operative (arg) env true) (/ 1 0)))
+
+# `or` tests
+(assert "`or` returns false for both false" (not (or false false)))
+(assert "`or` returns true for left false and right true" (or false true))
+(assert "`or` returns true for left true and right false" (or true false))
+(assert "`or` returns true for both true" (or true true))
+(assert "`or` doesn't evalueate second argument if first is true" (or true (/ 1 0)))
 
 # `throws?` tests
 (assert "`throws?` returns false when no exception is thrown"
