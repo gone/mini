@@ -5,7 +5,7 @@ import traceback
 import types
 
 class MiniObject(object):
-    def __init__(py_object, **meta):
+    def __init__(self, py_object, **meta):
         (   "The following python types map to the following mini types:\n"
             "   bool -> boolean\n"
             "   str -> string\n"
@@ -59,13 +59,6 @@ class Atom(Value):
 class Number(Atom):
     def __init__(self,value,**kwargs):
         super(Number,self).__init__(value,**kwargs)
-
-    def __eq__(self,other):
-        return self.value == other.value
- 
-class String(Atom):
-    def __init__(self,value,**kwargs):
-        super(String,self).__init__(value,**kwargs)
 
     def __eq__(self,other):
         return self.value == other.value
@@ -134,7 +127,7 @@ def parse(source):
                 end = match.end('number')))
 
         elif match.group('string'):
-            result.append(String(
+            result.append(MiniObject(
                 match.group('string')[1:-1],
                 start = match.start('string'),
                 end = match.end('string')))
@@ -218,8 +211,12 @@ def apply(applicative, pattern, environment):
     return applicative(pattern, environment)
 
 def evaluate(expression, environment):
-    if isinstance(expression, Number) or isinstance(expression, String) or isinstance(expression,Keyword):
+    if isinstance(expression, Number) or isinstance(expression,Keyword):
         return expression
+
+    if isinstance(expression, MiniObject):
+        if isinstance(expression.py_object, str):
+            return expression
 
     if isinstance(expression, Identifier):
         while environment != None:
@@ -236,7 +233,7 @@ def evaluate(expression, environment):
     assert False
 
 def length(collection):
-    if isinstance(collection, String):
+    if isinstance(collection.value, str):
         return len(collection.value)
 
     raise Exception("TypeError")
@@ -244,8 +241,8 @@ def length(collection):
 def concatenate(l,r):
     # TODO Implement ropes: http://citeseer.ist.psu.edu/viewdoc/download?doi=10.1.1.14.9450&rep=rep1&type=pdf
     # TODO Apply this to other collection types
-    if isinstance(l,String) and isinstance(r, String):
-        return String(l.value + r.value)
+    if isinstance(l.py_object,str) and isinstance(r.py_object, str):
+        return MiniObject(l.value + r.value)
 
     raise Exception('TypeError')
 
@@ -254,20 +251,20 @@ def slice(collection, start, end):
         start = start.value
         end = end.value
 
-        if isinstance(collection, String):
-            return String(collection.value[start:end])
+        if isinstance(collection.py_object, str):
+            return MiniObject(collection.py_object[start:end])
 
     if isinstance(start,Number) and isinstance(start.value, int) and end is NIL:
         start = start.value
 
-        if isinstance(collection, String):
-            return String(collection.value[start:])
+        if isinstance(collection.py_object, str):
+            return MiniObject(collection.py_object[start:])
 
     if start is NIL and isinstance(end, Number) and isinstance(end.value,int):
         end = end.value
 
-        if isinstance(collection, String):
-            return String(collection.value[:end])
+        if isinstance(collection.py_object, str):
+            return MiniObject(collection.py_object[:end])
 
     raise Exception('TypeError')
 
@@ -281,7 +278,7 @@ def _assert(pattern, environment):
             assertion = arguments
         
         else:
-            description = arguments[0].value
+            description = arguments[0].py_object
             assertion = arguments[1:]
         
         if not isinstance(assertion[-1],Boolean):
@@ -305,7 +302,7 @@ def throws(pattern, environment):
     expression = pattern[0]
     exception = evaluate(pattern[1], environment)
 
-    if not isinstance(exception, String):
+    if not isinstance(exception.py_object, str):
         raise Exception('throws? expects a string as the second argument')
 
     try:
@@ -313,7 +310,7 @@ def throws(pattern, environment):
         return FALSE
     except Exception as e:
         exception_type, message = e.message.split(':',1)
-        return TRUE if exception_type == exception.value else FALSE
+        return TRUE if exception_type == exception.py_object else FALSE
 
 def _not(argument):
     if not isinstance(argument, Boolean):
@@ -580,14 +577,17 @@ def mod(l,r):
     return l % r
 
 def eq(l,r):
+    if isinstance(l,MiniObject) and isinstance(r,MiniObject):
+        return l.py_object == r.py_object
+
     return l == r
 
 def lt(l,r):
     if isinstance(l,Number) and isinstance(r,Number):
         return l.value < r.value
 
-    if isinstance(l,String) and isinstance(r,String):
-        return l.value < r.value
+    if isinstance(l.py_object,str) and isinstance(r.py_object,str):
+        return l.py_object < r.py_object
 
     raise TypeError()
 
@@ -595,8 +595,8 @@ def gt(l,r):
     if isinstance(l,Number) and isinstance(r,Number):
         return l.value > r.value
 
-    if isinstance(l,String) and isinstance(r,String):
-        return l.value > r.value
+    if isinstance(l.py_object,str) and isinstance(r.py_object,str):
+        return l.py_object > r.py_object
 
     raise TypeError()
 
