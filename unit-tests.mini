@@ -17,6 +17,8 @@
 (assert "`=` returns false for keyword-to-string comparison (string first)"
         (not (= ":keyword" :keyword)))
 
+# `/` tests
+(assert "`/` divides" (= (/ 6 3) 2))
 
 # `assert` tests
 (assert "`assert` executes without exception for true assertion" true)
@@ -78,6 +80,8 @@
         ((operative () env
                     (define should-not-be-defined false)))
         (not (defined? should-not-be-defined)))
+(assert "`operative` doesn't evaluate its arguments"
+        ((operative (arg) env true) (/ 1 0)))
 
 # `throws?` tests
 (assert "`throws?` returns false when no exception is thrown"

@@ -174,6 +174,13 @@ def py_to_mini(py_object):
         def wrapped(pattern, environment):
             result = py_object(*map(lambda arg : evaluate(arg,environment),pattern))
 
+            if isinstance(result, float):
+                return Number(result)
+
+            # isinstance(True, int) returns True
+            if isinstance(result, int) and not isinstance(result, bool):
+                return Number(result)
+
             return {
                 True    : TRUE,
                 False   : FALSE,
@@ -456,6 +463,21 @@ def write_file(filename, string):
 def is_empty(collection):
     return len(collection) == 0
 
+def throw(exception):
+    raise Exception(exception.value)
+
+def divide(l,r):
+    if not isinstance(l, Number) or not isinstance(r, Number):
+        raise Excepion('TypeError')
+
+    l = l.value
+    r = r.value
+
+    if isinstance(l,int) and isinstance(r,int) and l % r != 0:
+        l = float(l)
+
+    return l / r
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -464,6 +486,7 @@ builtins = {
 
     # Builtin functions
     '='         : py_to_mini(lambda l,r : l == r),
+    '/'         : py_to_mini(divide),
     'associate' : py_to_mini(associate),
     'dissociate': py_to_mini(dissociate),
     'evaluate'  : py_to_mini(evaluate),
@@ -476,6 +499,7 @@ builtins = {
     'mapping'   : py_to_mini(mapping),
     'read-file' : py_to_mini(read_file),
     'rest'      : py_to_mini(rest),
+    'throw'     : py_to_mini(throw),
     'write-file': py_to_mini(write_file),
 
     # Builtin special forms
