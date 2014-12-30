@@ -215,10 +215,39 @@ def evaluate(expression, environment):
 
     assert False
 
+def length(collection):
+    if isinstance(collection, String):
+        return len(collection.value)
+
+    raise Exception("TypeError")
+
 def concatenate(l,r):
     # TODO Implement ropes: http://citeseer.ist.psu.edu/viewdoc/download?doi=10.1.1.14.9450&rep=rep1&type=pdf
+    # TODO Apply this to other collection types
     if isinstance(l,String) and isinstance(r, String):
         return String(l.value + r.value)
+
+    raise Exception('TypeError')
+
+def slice(collection, start, end):
+    if isinstance(start,Number) and isinstance(end, Number) and isinstance(start.value, int) and isinstance(end.value,int):
+        start = start.value
+        end = end.value
+
+        if isinstance(collection, String):
+            return String(collection.value[start:end])
+
+    if isinstance(start,Number) and isinstance(start.value, int) and end is NIL:
+        start = start.value
+
+        if isinstance(collection, String):
+            return String(collection.value[start:])
+
+    if start is NIL and isinstance(end, Number) and isinstance(end.value,int):
+        end = end.value
+
+        if isinstance(collection, String):
+            return String(collection.value[:end])
 
     raise Exception('TypeError')
 
