@@ -237,20 +237,22 @@ def is_integer(arg):
 
 def slice(collection, start, end):
     if isinstance(start,MiniObject) and isinstance(end, MiniObject) and is_integer(start.py_object) and is_integer(end.py_object):
-        start = start.value
-        end = end.value
+        start = start.py_object
+        end = end.py_object
 
         if isinstance(collection.py_object, str):
             return MiniObject(collection.py_object[start:end])
 
+        raise Exception("TypeError")
+
     if isinstance(start,MiniObject) and is_integer(start.py_object) and end is NIL:
-        start = start.value
+        start = start.py_object
 
         if isinstance(collection.py_object, str):
             return MiniObject(collection.py_object[start:])
 
     if start is NIL and isinstance(end, MiniObject) and is_integer(end.py_object):
-        end = end.value
+        end = end.py_object
 
         if isinstance(collection.py_object, str):
             return MiniObject(collection.py_object[:end])

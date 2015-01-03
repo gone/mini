@@ -55,6 +55,11 @@
                 true)
         (not (defined? identifier-in-nested-scope)))
 
+# `concatenate` tests
+(assert "`concatenate` concatenates strings"
+        (= (concatenate "Hello, " "world")
+           "Hello, world"))
+
 # `define` tests
 (assert "`define` adds identifier to environment"
         (define previously-undefined-identifier true)
@@ -110,6 +115,14 @@
 (assert "`or` returns true for left true and right false" (or true false))
 (assert "`or` returns true for both true" (or true true))
 (assert "`or` doesn't evalueate second argument if first is true" (or true (/ 1 0)))
+
+# `slice` tests
+(assert "`slice` returns a slice of a string"
+        (= (slice "Hello, world" 1 11) "ello, worl"))
+(assert "`slice` uses start of string if start index is nil"
+        (= (slice "Hello, world" nil 11) "Hello, worl"))
+(assert "`slice` uses end of string if end index is nil"
+        (= (slice "Hello, world" 1 nil) "ello, world"))
 
 # `throws?` tests
 (assert "`throws?` returns false when no exception is thrown"
