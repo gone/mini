@@ -123,6 +123,8 @@
         (= (slice "Hello, world" nil 11) "Hello, worl"))
 (assert "`slice` uses end of string if end index is nil"
         (= (slice "Hello, world" 1 nil) "ello, world"))
+(assert "`slice` counts backward if start or end is negative"
+        (= (slice "Hello, world" -11 -1) "ello, worl"))
 
 # `throws?` tests
 (assert "`throws?` returns false when no exception is thrown"
