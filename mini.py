@@ -37,17 +37,6 @@ class Value(object):
     def __repr__(self):
         return unicode(self)
 
-class SExpression(Value):
-    def __init__(self,value,**kwargs):
-        super(SExpression,self).__init__(**kwargs)
-        self.value = tuple(value)
-
-    def __unicode__(self):
-        return u'({})'.format(u' '.join(map(unicode,self.value)))
-
-    def __repr__(self):
-        return unicode(self)
-
 class Atom(Value):
     def __init__(self,value,**kwargs):
         super(Atom,self).__init__(**kwargs)
@@ -105,8 +94,8 @@ def parse(source):
             tmp, result = result, stack.pop()
             start, result = result
 
-            result.append(SExpression(
-                tmp,
+            result.append(MiniObject(
+                tuple(tmp),
                 start = start,
                 end = match.end('close_parenthese')))
 
@@ -223,8 +212,8 @@ def evaluate(expression, environment):
 
         raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.value))
 
-    if isinstance(expression, SExpression):
-        return apply(evaluate(expression.value[0],environment), expression.value[1:], environment)
+    if isinstance(expression, MiniObject) and isinstance(expression.py_object, tuple):
+        return apply(evaluate(expression.py_object[0],environment), expression.py_object[1:], environment)
 
     assert False
 
@@ -357,10 +346,10 @@ def define(pattern, environment):
 
         return NIL
 
-    if isinstance(head, SExpression):
+    if isinstance(head.py_object, tuple):
         raise Exception('NotImplementedError: Defining patterns is not yet implemented')
 
-    raise Exception('TypeError: `define` expected Identifier or SExpression, got {}'.format(type(head)))
+    raise Exception('TypeError: `define` expected Identifier or list, got {}'.format(type(head)))
 
 def defined_p(pattern, environment):
     if len(pattern) != 1:
@@ -410,13 +399,13 @@ def first(arg):
     if isinstance(arg, tuple):
         return arg[0]
 
-    if isinstance(arg, SExpression):
-        return arg.value[0]
+    if isinstance(arg.py_object, tuple):
+        return arg.py_object[0]
 
     raise Exception("TypeError")
 
 def empty_p(collection):
-    if isinstance(collection, SExpression):
+    if isinstance(collection.py_object, tuple):
         return len(collection.value) == 0
     
     assert False
@@ -425,8 +414,8 @@ def rest(arg):
     if isinstance(arg, tuple):
         return arg[:1]
 
-    if isinstance(arg, SExpression):
-        return SExpression(arg.value[1:])
+    if isinstance(arg.py_object, tuple):
+        return MiniObject(arg.py_object[1:])
 
     raise Exception("TypeError")
 
@@ -443,16 +432,16 @@ def nest(environment):
 # While Greek letters are appropriate for an academic, theoretical context, they make for
 # poor variable names, so this is tentatively named `operative`
 def operative(pattern, environment):
-    if not isinstance(pattern[0],SExpression):
-        raise Exception("ArgumentError: The first argument to `operative` should be an SExpression")
+    if not isinstance(pattern[0].py_object,tuple):
+        raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
 
-    if not all([isinstance(arg, Identifier) for arg in pattern[0].value]):
+    if not all([isinstance(arg, Identifier) for arg in pattern[0].py_object]):
         raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
 
     if not isinstance(pattern[1],Identifier):
         raise Exception("ArgumentError: The second argument to `operative` should be an identifer")
 
-    argument_identifiers = [ai.value for ai in pattern[0].value]
+    argument_identifiers = [ai.value for ai in pattern[0].py_object]
     calling_environment_identifier = pattern[1].value
 
     existing = set()
@@ -480,8 +469,8 @@ def operative(pattern, environment):
 
 # This is lambda, but called function
 def function(pattern, environment):
-    if not isinstance(pattern[0],SExpression):
-        raise Exception("ArgumentError: The first argument to `operative` should be an SExpression")
+    if not isinstance(pattern[0].py_object,tuple):
+        raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
 
     argument_identifiers = [ai.value for ai in pattern[0].value]
 
