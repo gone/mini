@@ -16,6 +16,7 @@ class MiniObject(object):
             "   dict -> map\n"
             "   MiniKeyword -> keyword\n"
             "mini vectors and maps should be treated as though immutable"
+            "s-expressions should be parsed as tuples"
         )
         self.py_object = py_object
         self.meta = meta
