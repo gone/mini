@@ -228,7 +228,7 @@ def concatenate(l,r):
     # TODO Implement ropes: http://citeseer.ist.psu.edu/viewdoc/download?doi=10.1.1.14.9450&rep=rep1&type=pdf
     # TODO Apply this to other collection types
     if isinstance(l.py_object,str) and isinstance(r.py_object, str):
-        return MiniObject(l.value + r.value)
+        return MiniObject(l.py_object + r.py_object)
 
     raise Exception('TypeError')
 
