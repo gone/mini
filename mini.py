@@ -194,9 +194,9 @@ def evaluate(expression, environment):
 
     assert False
 
-def length(collection):
-    if isinstance(collection.value, str):
-        return len(collection.value)
+def length(string):
+    if isinstance(string.py_object, str):
+        return len(string.py_object)
 
     raise Exception("TypeError")
 
@@ -467,9 +467,6 @@ def write_file(filename, string):
     with open(filename, 'w') as f:
         f.write(string)
 
-def is_empty(collection):
-    return len(collection) == 0
-
 def throw(exception):
     raise Exception(exception.value)
 
@@ -609,12 +606,11 @@ builtins = {
 
     # Builtin string functions
     'concatenate'   : py_to_mini(concatenate),
+    'length'        : py_to_mini(length),
     'slice'         : py_to_mini(slice),
 
     # Builtin collection (string, list, vector) functions
-    'empty?'        : py_to_mini(is_empty),
     'first'         : py_to_mini(first),
-    'length'        : py_to_mini(length),
     'list'          : py_to_mini(_list),
     'rest'          : py_to_mini(rest),
 

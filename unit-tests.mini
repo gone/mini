@@ -89,6 +89,10 @@
 (assert "`if` doesn't execute second argument for false condition"
         (if false undefined-identifier true))
 
+# `length` tests
+(assert "`length` returns length of string"
+        (= 12 (length "Hello, world")))
+
 # `not` tests
 (assert "`not` returns false for true" (= (not true) false))
 (assert "`not` returns true for false" (= (not false) true))
