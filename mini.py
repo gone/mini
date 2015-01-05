@@ -608,10 +608,10 @@ builtins = {
     'cdr'           : py_to_mini(cdr),
 
     # Builtin string functions
+    'concatenate'   : py_to_mini(concatenate),
     'slice'         : py_to_mini(slice),
 
     # Builtin collection (string, list, vector) functions
-    'concatenate'   : py_to_mini(concatenate),
     'empty?'        : py_to_mini(is_empty),
     'first'         : py_to_mini(first),
     'length'        : py_to_mini(length),
