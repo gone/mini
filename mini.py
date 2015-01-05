@@ -34,17 +34,13 @@ class Value(object):
     def __repr__(self):
         return unicode(self)
 
-class Atom(Value):
+class Identifier(Value):
     def __init__(self,value,**kwargs):
-        super(Atom,self).__init__(**kwargs)
+        super(Identifier,self).__init__(**kwargs)
         self.value = value
 
     def __unicode__(self):
         return unicode(self.value)
-
-class Identifier(Atom):
-    def __init__(self,value,**kwargs):
-        super(Identifier,self).__init__(value,**kwargs)
 
 KEYWORDS = {}
 
