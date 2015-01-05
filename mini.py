@@ -15,6 +15,7 @@ class MiniObject(object):
             "   list -> vector (may only contain one type)\n"
             "   dict -> map\n"
             "   MiniKeyword -> keyword\n"
+            "   Pair -> pair"
             "mini vectors and maps should be treated as though immutable"
             "s-expressions should be parsed as tuples"
         )
@@ -42,6 +43,14 @@ class MiniKeyword(object):
 
     def __repr__(self):
         return '<keyword {}>'.format(self.string)
+
+class MiniPair(object):
+    def __init__(self, car, cdr):
+        assert isinstance(car, MiniObject)
+        assert isinstance(cdr, MiniObject)
+
+        self.car = car
+        self.cdr = cdr
 
 def create_keyword(value,**kwargs):
     if value in KEYWORDS:
@@ -144,7 +153,7 @@ def py_to_mini(py_object):
         def wrapped(pattern, environment):
             result = py_object(*map(lambda arg : evaluate(arg,environment),pattern))
 
-            if is_number(result):
+            if is_number(result) or isinstance(result,MiniPair):
                 return MiniObject(result)
 
             return {
@@ -555,6 +564,15 @@ def le(l,r):
 def ge(l,r):
     return gt(l,r) or eq(l,r)
 
+def cons(l,r):
+    return MiniPair(l,r)
+
+def car(p):
+    return p.py_object.car
+
+def cdr(p):
+    return p.py_object.cdr
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -581,6 +599,11 @@ builtins = {
     '/'             : py_to_mini(divide),
     '//'            : py_to_mini(idivide),
     'mod'           : py_to_mini(mod),
+
+    # Builtin pair functions
+    'cons'          : py_to_mini(cons),
+    'car'           : py_to_mini(car),
+    'cdr'           : py_to_mini(cdr),
 
     # Builtin collection (string, list, vector) functions
     'concatenate'   : py_to_mini(concatenate),

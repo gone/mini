@@ -2,6 +2,12 @@
 (assert "Evaluating undefined variable throws exception"
         (throws? undefined-identifier "UndefinedIdentifierError"))
 
+# pair tests
+(assert "`car` retrieves first argument to `cons`"
+        (car (cons true false)))
+(assert "`cdr` retrieves first argument to `cons`"
+        (cdr (cons false true)))
+
 # `=` tests
 (assert "`=` returns true for equal numbers" (= 0 0))
 (assert "`=` returns false for non-equal numbers" (not (= 0 1)))
