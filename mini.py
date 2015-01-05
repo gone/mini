@@ -133,34 +133,21 @@ def parse(source):
     assert not stack, "Unmatched parenthese ("
     return result
 
-class Nil(Value):
+class Nil(MiniObject):
     def __init__(self,**kwargs):
-        super(Nil,self).__init__(**kwargs)
+        super(Nil,self).__init__(None,**kwargs)
 
-    def __unicode__(self):
+    def __repr__(self):
         return 'nil'
 
 NIL = Nil()
 
-class Boolean(Value):
-    def __init__(self, value, **kwargs):
-        super(Boolean,self).__init__(**kwargs)
-        self.value = value
+class Boolean(MiniObject):
+    def __init__(self, py_object, **kwargs):
+        super(Boolean,self).__init__(py_object, **kwargs)
 
     def __unicode__(self):
         return "true" if self.value else "false"
-
-class Map(Value):
-    def __init__(self, value, **kwargs):
-        super(Map,self).__init__(**kwargs)
-        self.value = value
-        self.call = py_to_mini(lambda key : self.value[key])
-
-    def __repr__(self):
-        return repr(self.value)
-    
-    def __call__(self, pattern, environment):
-        return self.call(pattern,environment)
 
 TRUE = Boolean(True)
 FALSE = Boolean(False)
@@ -379,21 +366,6 @@ def _if(pattern, environment):
         return evaluate(if_result_false, environment)
 
     raise Exception("TypeError: `if` expects boolean, received {}".format(type(result)))
-
-def mapping(*arguments):
-    if len(arguments) % 2 != 0:
-        raise Exception("ArgumentError: `map` takes an even number of arguments")
-    return Map(dict((arguments[i:i+2] for i in range(0, len(arguments), 2))))
-
-def associate(mapping, key, value):
-    result = dict(mapping)
-    result[key] = value
-    return result
-
-def dissociate(mapping, key):
-    result = dict(mapping)
-    del result[key]
-    return result
 
 def construct(head,tail):
     return (head, tail)
@@ -629,11 +601,6 @@ builtins = {
     '/'             : py_to_mini(divide),
     '//'            : py_to_mini(idivide),
     'mod'           : py_to_mini(mod),
-
-    # Builtin map functions
-    'associate'     : py_to_mini(associate),
-    'dissociate'    : py_to_mini(dissociate),
-    'mapping'       : py_to_mini(mapping),
 
     # Builtin collection (string, list, vector) functions
     'concatenate'   : py_to_mini(concatenate),
