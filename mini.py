@@ -179,13 +179,15 @@ def apply(applicative, pattern, environment):
     return applicative(pattern, environment)
 
 def evaluate(expression, environment):
-    # TODO Clean this up
     if isinstance(expression, MiniObject):
         if isinstance(expression.py_object, str) or is_number(expression.py_object):
             return expression
 
-        if isinstance(expression.py_object,MiniKeyword):
+        if isinstance(expression.py_object, MiniKeyword):
             return expression
+
+        if isinstance(expression.py_object, tuple):
+            return apply(evaluate(expression.py_object[0],environment), expression.py_object[1:], environment)
 
     if isinstance(expression, Identifier):
         while environment != None:
@@ -195,9 +197,6 @@ def evaluate(expression, environment):
             environment = environment.get('__parent__')
 
         raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.value))
-
-    if isinstance(expression, MiniObject) and isinstance(expression.py_object, tuple):
-        return apply(evaluate(expression.py_object[0],environment), expression.py_object[1:], environment)
 
     assert False
 
