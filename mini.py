@@ -21,26 +21,15 @@ class MiniObject(object):
         self.py_object = py_object
         self.meta = meta
 
-class Value(object):
-    def __init__(self, **kwargs):
-        for key in kwargs:
-            if key == 'start':
-                self.start = kwargs['start']
-            elif key == 'end':
-                self.end = kwargs['end']
-            else:
-                raise Exception('Unexpected keyword argument {}'.format(key))
-
-    def __repr__(self):
-        return unicode(self)
-
-class Identifier(Value):
+class Identifier(object):
     def __init__(self,value,**kwargs):
-        super(Identifier,self).__init__(**kwargs)
         self.value = value
 
-    def __unicode__(self):
-        return unicode(self.value)
+        self.start = kwargs.get('start')
+        self.end = kwargs.get('end')
+
+    def __repr__(self):
+        return '<identifier {}>'.format(self.value)
 
 KEYWORDS = {}
 
@@ -52,7 +41,7 @@ class MiniKeyword(object):
         return self is other
 
     def __repr__(self):
-        return self.string
+        return '<keyword {}>'.format(self.string)
 
 def create_keyword(value,**kwargs):
     if value in KEYWORDS:
