@@ -21,10 +21,6 @@ class MiniObject(object):
         self.py_object = py_object
         self.meta = meta
 
-class MiniKeyword(object):
-    def __init__(self, string):
-        self.string = string
-
 class Value(object):
     def __init__(self, **kwargs):
         for key in kwargs:
@@ -52,10 +48,9 @@ class Identifier(Atom):
 
 KEYWORDS = {}
 
-class Keyword(Atom):
-    def __init__(self,value,**kwargs):
-        super(Keyword,self).__init__(object(),**kwargs)
-        self.string = value
+class MiniKeyword(object):
+    def __init__(self,string):
+        self.string = string
 
     def __eq__(self,other):
         return self is other
@@ -67,7 +62,7 @@ def create_keyword(value,**kwargs):
     if value in KEYWORDS:
         return KEYWORDS[value]
 
-    k = Keyword(value,**kwargs)
+    k = MiniObject(MiniKeyword(value), **kwargs)
     KEYWORDS[value] = k
     return k
 
@@ -184,11 +179,12 @@ def apply(applicative, pattern, environment):
     return applicative(pattern, environment)
 
 def evaluate(expression, environment):
-    if isinstance(expression,Keyword):
-        return expression
-
+    # TODO Clean this up
     if isinstance(expression, MiniObject):
         if isinstance(expression.py_object, str) or is_number(expression.py_object):
+            return expression
+
+        if isinstance(expression.py_object,MiniKeyword):
             return expression
 
     if isinstance(expression, Identifier):
