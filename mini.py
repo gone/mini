@@ -211,29 +211,31 @@ def concatenate(l,r):
 def is_integer(arg):
     return isinstance(arg, int) and not isinstance(arg, bool)
 
-def slice(collection, start, end):
-    if isinstance(start,MiniObject) and isinstance(end, MiniObject) and is_integer(start.py_object) and is_integer(end.py_object):
-        start = start.py_object
-        end = end.py_object
+def slice(string, start, end):
+    if not isinstance(string.py_object, str):
+        raise Exception('TypeError')
 
-        if isinstance(collection.py_object, str):
-            return MiniObject(collection.py_object[start:end])
+    py_string = string.py_object
 
-        raise Exception("TypeError")
+    if is_integer(start.py_object):
+        py_start = start.py_object
 
-    if isinstance(start,MiniObject) and is_integer(start.py_object) and end is NIL:
-        start = start.py_object
+    elif start.py_object == None:
+        py_start = 0
 
-        if isinstance(collection.py_object, str):
-            return MiniObject(collection.py_object[start:])
+    else:
+        raise Exception('TypeError')
 
-    if start is NIL and isinstance(end, MiniObject) and is_integer(end.py_object):
-        end = end.py_object
+    if is_integer(end.py_object):
+        py_end = end.py_object
 
-        if isinstance(collection.py_object, str):
-            return MiniObject(collection.py_object[:end])
+    elif end.py_object == None:
+        py_end = len(py_string)
 
-    raise Exception('TypeError')
+    else:
+        raise Exception('TypeError')
+
+    return MiniObject(py_string[py_start:py_end])
 
 def _assert(pattern, environment):
     def assert_internal(*arguments):
@@ -605,6 +607,9 @@ builtins = {
     'car'           : py_to_mini(car),
     'cdr'           : py_to_mini(cdr),
 
+    # Builtin string functions
+    'slice'         : py_to_mini(slice),
+
     # Builtin collection (string, list, vector) functions
     'concatenate'   : py_to_mini(concatenate),
     'empty?'        : py_to_mini(is_empty),
@@ -612,7 +617,6 @@ builtins = {
     'length'        : py_to_mini(length),
     'list'          : py_to_mini(_list),
     'rest'          : py_to_mini(rest),
-    'slice'         : py_to_mini(slice),
 
     # Builtin boolean functions
     'not'           : py_to_mini(_not),
