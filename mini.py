@@ -45,7 +45,7 @@ class MiniSymbol(object):
         return self is other
 
     def __repr__(self):
-        return '<symbol {}>'.format(self.string)
+        return '<symbol :{}>'.format(self.string)
 
 class MiniPair(object):
     def __init__(self, car, cdr):
@@ -69,8 +69,8 @@ token_regex = re.compile(r'''(?mx)
     (?P<close_parenthese>\))|
     (?P<number>\-?\d+\.\d+|\-?\d+)|
     (?P<string>"[^"]*")|
-    (?P<identifier>[_A-Za-z\?\-\+\*/=]+)|
-    (?P<symbol>\:[_A-Za-z\?\-\+\*/=]*)
+    (?P<identifier>[_A-Za-z\?\-\+\*/=\>\<]+)|
+    (?P<symbol>\:[_A-Za-z\?\-\+\*/=\>\<]*)
     )''')
 
 def parse(source):
@@ -115,7 +115,7 @@ def parse(source):
 
         elif match.group('symbol'):
             result.append(create_symbol(
-                match.group('symbol'),
+                match.group('symbol')[1:],
                 start = match.start('symbol'),
                 end = match.end('symbol')))
 
@@ -574,6 +574,12 @@ def car(p):
 def cdr(p):
     return p.py_object.cdr
 
+def identifier_to_symbol(identifier):
+    if not isinstance(identifier.py_object, Identifier):
+        raise Exception('`identifier->symbol` expected identifier, received {}'.format(type(identifier.py_object)))
+
+    return create_symbol(identifier.py_object.symbol)
+
 builtins = {
     # Builtin constants
     'true'      : TRUE,
@@ -587,7 +593,10 @@ builtins = {
     '<='            : py_to_mini(le),
     '>='            : py_to_mini(ge),
 
-    # Builtin generatl functions
+    # Builtin conversion functions
+    'identifier->symbol'    : py_to_mini(identifier_to_symbol),
+
+    # Builtin general functions
     'evaluate'      : py_to_mini(evaluate),
     'print'         : py_to_mini(print),
     'prompt'        : py_to_mini(raw_input),
