@@ -79,6 +79,10 @@
 (assert "`defined?` returns false for undefined identifier"
         (not (defined? undefined-identifier)))
 
+# `identifier->symbol` tests
+(assert "`identifier->symbol` returns a symbol when given an identifier"
+        (= (identifier->symbol (quote identifier)) :identifier))
+
 # `if` tests
 (assert "`if` returns second argument for true condition"
         (if true true false))
