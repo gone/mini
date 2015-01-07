@@ -358,36 +358,6 @@ def _if(pattern, environment):
 
     raise Exception("TypeError: `if` expects boolean, received {}".format(type(result)))
 
-def construct(head,tail):
-    return (head, tail)
-
-def first(arg):
-    if isinstance(arg, tuple):
-        return arg[0]
-
-    if isinstance(arg.py_object, tuple):
-        return arg.py_object[0]
-
-    raise Exception("TypeError")
-
-def empty_p(collection):
-    if isinstance(collection.py_object, tuple):
-        return len(collection.value) == 0
-    
-    assert False
-
-def rest(arg):
-    if isinstance(arg, tuple):
-        return arg[:1]
-
-    if isinstance(arg.py_object, tuple):
-        return MiniObject(arg.py_object[1:])
-
-    raise Exception("TypeError")
-
-def _list(*args):
-    return tuple(args)
-
 def nest(environment):
     return {
         '__parent__'    : environment,
@@ -578,12 +548,14 @@ builtins = {
     'false'     : FALSE,
     'nil'       : NIL,
 
-    # Builtin general functions
+    # Builtin comparison functions
     '='             : py_to_mini(eq),
     '<'             : py_to_mini(lt),
     '>'             : py_to_mini(gt),
     '<='            : py_to_mini(le),
     '>='            : py_to_mini(ge),
+
+    # Builtin generatl functions
     'evaluate'      : py_to_mini(evaluate),
     'print'         : py_to_mini(print),
     'prompt'        : py_to_mini(raw_input),
@@ -608,11 +580,6 @@ builtins = {
     'concatenate'   : py_to_mini(concatenate),
     'length'        : py_to_mini(length),
     'slice'         : py_to_mini(slice),
-
-    # Builtin collection (string, list, vector) functions
-    'first'         : py_to_mini(first),
-    'list'          : py_to_mini(_list),
-    'rest'          : py_to_mini(rest),
 
     # Builtin boolean functions
     'not'           : py_to_mini(_not),
