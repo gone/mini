@@ -22,6 +22,9 @@ class MiniObject(object):
         self.py_object = py_object
         self.meta = meta
 
+    def __repr__(self):
+        return repr(self.py_object)
+
 class Identifier(object):
     def __init__(self,value,**kwargs):
         self.value = value
@@ -105,10 +108,10 @@ def parse(source):
                 end = match.end('string')))
 
         elif match.group('identifier'):
-            result.append(Identifier(
+            result.append(MiniObject(Identifier(
                 match.group('identifier'),
                 start = match.start('identifier'),
-                end = match.end('identifier')))
+                end = match.end('identifier'))))
 
         elif match.group('symbol'):
             result.append(create_symbol(
@@ -183,14 +186,14 @@ def evaluate(expression, environment):
         if isinstance(expression.py_object, tuple):
             return apply(evaluate(expression.py_object[0],environment), expression.py_object[1:], environment)
 
-    if isinstance(expression, Identifier):
-        while environment != None:
-            if expression.value in environment:
-                return environment[expression.value]
-
-            environment = environment.get('__parent__')
-
-        raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.value))
+        if isinstance(expression.py_object, Identifier):
+            while environment != None:
+                if expression.py_object.value in environment:
+                    return environment[expression.py_object.value]
+        
+                environment = environment.get('__parent__')
+        
+            raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.py_object.value))
 
     assert False
 
@@ -277,9 +280,17 @@ def throws(pattern, environment):
     try:
         evaluate(expression, environment)
         return FALSE
+
     except Exception as e:
-        exception_type, message = e.message.split(':',1)
-        return TRUE if exception_type == exception.py_object else FALSE
+        if ':' in e.message:
+            exception_type, message = e.message.split(':',1)
+        else:
+            exception_type = e.message
+
+        if exception_type == exception.py_object:
+            return TRUE
+
+        raise
 
 def _not(argument):
     if not isinstance(argument, Boolean):
@@ -317,18 +328,19 @@ def define(pattern, environment):
     head = pattern[0]
     body = pattern[1:]
 
-    if isinstance(head, Identifier):
-        identifier = head.value
-
-        if is_defined(identifier, environment):
-            raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
-
-        environment[identifier] = evaluate_expressions(body, environment)
-
-        return NIL
-
-    if isinstance(head.py_object, tuple):
-        raise Exception('NotImplementedError: Defining patterns is not yet implemented')
+    if isinstance(head, MiniObject):
+        if isinstance(head.py_object, Identifier):
+            identifier = head.py_object.value
+        
+            if is_defined(identifier, environment):
+                raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
+        
+            environment[identifier] = evaluate_expressions(body, environment)
+        
+            return NIL
+        
+        elif isinstance(head.py_object, tuple):
+            raise Exception('NotImplementedError: Defining patterns is not yet implemented')
 
     raise Exception('TypeError: `define` expected Identifier or list, got {}'.format(type(head)))
 
@@ -336,10 +348,10 @@ def defined_p(pattern, environment):
     if len(pattern) != 1:
         raise Exception("ArgumentError: `defined?` expects 1 argument, received {}".format(len(pattern)))
 
-    if not isinstance(pattern[0], Identifier):
-        raise Exception("TypeError")
+    if not isinstance(pattern[0].py_object, Identifier):
+        raise Exception("TypeError: Expected Identifier but got {}".format(type(pattern[0].py_object)))
 
-    return TRUE if is_defined(pattern[0].value, environment) else FALSE
+    return TRUE if is_defined(pattern[0].py_object.value, environment) else FALSE
 
 def _if(pattern, environment):
     if not len(pattern) in [2,3]:
@@ -371,14 +383,14 @@ def operative(pattern, environment):
     if not isinstance(pattern[0].py_object,tuple):
         raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
 
-    if not all([isinstance(arg, Identifier) for arg in pattern[0].py_object]):
+    if not all([isinstance(arg.py_object, Identifier) for arg in pattern[0].py_object]):
         raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
 
-    if not isinstance(pattern[1],Identifier):
+    if not isinstance(pattern[1].py_object,Identifier):
         raise Exception("ArgumentError: The second argument to `operative` should be an identifer")
 
-    argument_identifiers = [ai.value for ai in pattern[0].py_object]
-    calling_environment_identifier = pattern[1].value
+    argument_identifiers = [ai.py_object.value for ai in pattern[0].py_object]
+    calling_environment_identifier = pattern[1].py_object.value
 
     existing = set()
     for ai in argument_identifiers:

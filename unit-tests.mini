@@ -114,6 +114,9 @@
         (not (defined? should-not-be-defined)))
 (assert "`operative` doesn't evaluate its arguments"
         ((operative (arg) env true) (/ 1 0)))
+#(assert "`operative` with a symbol argument receives a cons-linked-list"
+#        (and (= ((operative argument-list env (car argument-list)) argument) :argument)
+#             (= ((operative argument-list env (cdr argument-list)) argument) nil)))
 
 # `or` tests
 (assert "`or` returns false for both false" (not (or false false)))
@@ -137,5 +140,5 @@
         (not (throws? (assert true) "AssertionError")))
 (assert "`throws?` returns true when the correct exception is thrown"
         (throws? (assert false) "AssertionError"))
-(assert "`throws?` returns false when the wrong exception is thrown"
-        (not (throws? (assert false) "TypeError")))
+(assert "`throws?` doesn't catch when the wrong exception is thrown"
+        (throws? (throws? (assert false) "TypeError") "AssertionError"))
