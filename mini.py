@@ -375,39 +375,65 @@ def nest(environment):
         '__parent__'    : environment,
     }
 
+def py_collection_to_mini_cons_list(py_collection):
+    result = NIL
+
+    for item in reversed(py_collection):
+        result = MiniObject(MiniPair(item, result))
+
+    return result
+
 # This is vau from John N. Shutt's seminal paper
 # https://www.wpi.edu/Pubs/ETD/Available/etd-090110-124904/unrestricted/jshutt.pdf
 # While Greek letters are appropriate for an academic, theoretical context, they make for
 # poor variable names, so this is tentatively named `operative`
 def operative(pattern, environment):
-    if not isinstance(pattern[0].py_object,tuple):
-        raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
+    argument_list_identifier = None
+    argument_identifiers = None
 
-    if not all([isinstance(arg.py_object, Identifier) for arg in pattern[0].py_object]):
-        raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
+    calling_environment_identifier = pattern[1].py_object.value
+
+    if isinstance(pattern[0].py_object, Identifier):
+        argument_list_identifier = pattern[0].py_object.value
+
+        if calling_environment_identifier == argument_list_identifier:
+            raise Exception("ArgumentError: Argument list identifier `{}` may not be the same as calling environment identifier".format(ai))
+
+    elif isinstance(pattern[0].py_object, tuple):
+        if not all([isinstance(arg.py_object, Identifier) for arg in pattern[0].py_object]):
+            raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
+
+        argument_identifiers = [ai.py_object.value for ai in pattern[0].py_object]
+        
+        existing = set()
+        for ai in argument_identifiers:
+            if ai in existing:
+                raise Exception("ArgumentError: Argument `{}` already defined".format(ai))
+
+            if calling_environment_identifier == ai:
+                raise Exception("ArgumentError: Argument `{}` may not be the same as calling environment identifier".format(ai))
+
+            existing.add(ai)
+
+    else:
+        raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
 
     if not isinstance(pattern[1].py_object,Identifier):
         raise Exception("ArgumentError: The second argument to `operative` should be an identifer")
 
-    argument_identifiers = [ai.py_object.value for ai in pattern[0].py_object]
-    calling_environment_identifier = pattern[1].py_object.value
-
-    existing = set()
-    for ai in argument_identifiers:
-        if ai in existing:
-            raise Exception("ArgumentError: Argument `{}` already defined".format(ai))
-        if calling_environment_identifier == ai:
-            raise Exception("ArgumentError: Argument `{}` may not be the same as calling environment identifier".format(ai))
-        existing.add(ai)
-
     local_environment = nest(environment)
     
-    def result(calling_pattern,calling_environment):
-        if not len(calling_pattern) == len(argument_identifiers):
-            raise Exception("ArgumentError: operative expected {} arguments, received {}".format(len(argument_identifiers),len(calling_pattern)))
+    def result(calling_pattern, calling_environment):
+        assert (argument_list_identifier == None) != (argument_identifiers == None)
+        if argument_list_identifier != None:
+            local_environment[argument_list_identifier] = py_collection_to_mini_cons_list(calling_pattern)
 
-        for i in range(len(argument_identifiers)):
-            local_environment[argument_identifiers[i]] = calling_pattern[i]
+        if argument_identifiers != None:
+            if not len(calling_pattern) == len(argument_identifiers):
+                raise Exception("ArgumentError: operative expected {} arguments, received {}".format(len(argument_identifiers),len(calling_pattern)))
+
+            for i in range(len(argument_identifiers)):
+                local_environment[argument_identifiers[i]] = calling_pattern[i]
 
         local_environment[calling_environment_identifier] = calling_environment
 

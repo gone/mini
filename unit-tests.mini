@@ -114,9 +114,9 @@
         (not (defined? should-not-be-defined)))
 (assert "`operative` doesn't evaluate its arguments"
         ((operative (arg) env true) (/ 1 0)))
-#(assert "`operative` with a symbol argument receives a cons-linked-list"
-#        (and (= ((operative argument-list env (car argument-list)) argument) :argument)
-#             (= ((operative argument-list env (cdr argument-list)) argument) nil)))
+(assert "`operative` with a symbol argument receives a cons-linked-list"
+        (and (= ((operative argument-list env (car argument-list)) 1) 1)
+             (= ((operative argument-list env (cdr argument-list)) 1) nil)))
 
 # `or` tests
 (assert "`or` returns false for both false" (not (or false false)))
