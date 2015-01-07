@@ -55,12 +55,12 @@ class MiniPair(object):
         self.car = car
         self.cdr = cdr
 
-def create_symbol(value,**kwargs):
-    if value in SYMBOLS:
-        return SYMBOLS[value]
+def create_symbol(string,**kwargs):
+    if string in SYMBOLS:
+        return SYMBOLS[string]
 
-    k = MiniObject(MiniSymbol(value), **kwargs)
-    SYMBOLS[value] = k
+    k = MiniObject(MiniSymbol(string), **kwargs)
+    SYMBOLS[string] = k
     return k
 
 token_regex = re.compile(r'''(?mx)
@@ -137,9 +137,6 @@ NIL = Nil()
 class Boolean(MiniObject):
     def __init__(self, py_object, **kwargs):
         super(Boolean,self).__init__(py_object, **kwargs)
-
-    def __unicode__(self):
-        return "true" if self.value else "false"
 
 TRUE = Boolean(True)
 FALSE = Boolean(False)
