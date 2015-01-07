@@ -26,14 +26,14 @@ class MiniObject(object):
         return repr(self.py_object)
 
 class Identifier(object):
-    def __init__(self,value,**kwargs):
-        self.value = value
+    def __init__(self,symbol,**kwargs):
+        self.symbol = symbol
 
         self.start = kwargs.get('start')
         self.end = kwargs.get('end')
 
     def __repr__(self):
-        return '<identifier {}>'.format(self.value)
+        return '<identifier {}>'.format(self.symbol)
 
 SYMBOLS = {}
 
@@ -188,12 +188,12 @@ def evaluate(expression, environment):
 
         if isinstance(expression.py_object, Identifier):
             while environment != None:
-                if expression.py_object.value in environment:
-                    return environment[expression.py_object.value]
+                if expression.py_object.symbol in environment:
+                    return environment[expression.py_object.symbol]
         
                 environment = environment.get('__parent__')
         
-            raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.py_object.value))
+            raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.py_object.symbol))
 
     assert False
 
@@ -330,7 +330,7 @@ def define(pattern, environment):
 
     if isinstance(head, MiniObject):
         if isinstance(head.py_object, Identifier):
-            identifier = head.py_object.value
+            identifier = head.py_object.symbol
         
             if is_defined(identifier, environment):
                 raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
@@ -351,7 +351,7 @@ def defined_p(pattern, environment):
     if not isinstance(pattern[0].py_object, Identifier):
         raise Exception("TypeError: Expected Identifier but got {}".format(type(pattern[0].py_object)))
 
-    return TRUE if is_defined(pattern[0].py_object.value, environment) else FALSE
+    return TRUE if is_defined(pattern[0].py_object.symbol, environment) else FALSE
 
 def _if(pattern, environment):
     if not len(pattern) in [2,3]:
@@ -391,10 +391,10 @@ def operative(pattern, environment):
     argument_list_identifier = None
     argument_identifiers = None
 
-    calling_environment_identifier = pattern[1].py_object.value
+    calling_environment_identifier = pattern[1].py_object.symbol
 
     if isinstance(pattern[0].py_object, Identifier):
-        argument_list_identifier = pattern[0].py_object.value
+        argument_list_identifier = pattern[0].py_object.symbol
 
         if calling_environment_identifier == argument_list_identifier:
             raise Exception("ArgumentError: Argument list identifier `{}` may not be the same as calling environment identifier".format(ai))
@@ -403,7 +403,7 @@ def operative(pattern, environment):
         if not all([isinstance(arg.py_object, Identifier) for arg in pattern[0].py_object]):
             raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
 
-        argument_identifiers = [ai.py_object.value for ai in pattern[0].py_object]
+        argument_identifiers = [ai.py_object.symbol for ai in pattern[0].py_object]
         
         existing = set()
         for ai in argument_identifiers:
@@ -446,7 +446,7 @@ def function(pattern, environment):
     if not isinstance(pattern[0].py_object,tuple):
         raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
 
-    argument_identifiers = [ai.value for ai in pattern[0].value]
+    argument_identifiers = [ai.symbol for ai in pattern[0].symbol]
 
     existing = set()
     for ai in argument_identifiers:
@@ -474,9 +474,6 @@ def read_file(filename):
 def write_file(filename, string):
     with open(filename, 'w') as f:
         f.write(string)
-
-def throw(exception):
-    raise Exception(exception.value)
 
 def add(l,r):
     if isinstance(l, MiniObject) and isinstance(r, MiniObject):
@@ -598,7 +595,6 @@ builtins = {
     'print'         : py_to_mini(print),
     'prompt'        : py_to_mini(raw_input),
     'read-file'     : py_to_mini(read_file),
-    'throw'         : py_to_mini(throw),
     'write-file'    : py_to_mini(write_file),
 
     # Builtin number functions
