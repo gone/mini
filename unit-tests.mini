@@ -16,12 +16,12 @@
 (assert "`=` returns true for equal true values" (= true true))
 (assert "`=` returns true for equal false values" (= false false))
 (assert "`=` returns true for nils" (= nil nil))
-(assert "`=` returns true for equal keywords" (= :keyword :keyword))
-(assert "`=` returns false for non-equal keywords" (not (= :keyword :not-the-same)))
-(assert "`=` returns false for keyword-to-string comparison (string first)"
-        (not (= :keyword ":keyword")))
-(assert "`=` returns false for keyword-to-string comparison (keyword first)"
-        (not (= ":keyword" :keyword)))
+(assert "`=` returns true for equal symbols" (= :symbol :symbol))
+(assert "`=` returns false for non-equal symbols" (not (= :symbol :not-the-same)))
+(assert "`=` returns false for symbol-to-string comparison (string first)"
+        (not (= :symbol ":symbol")))
+(assert "`=` returns false for symbol-to-string comparison (symbol first)"
+        (not (= ":symbol" :symbol)))
 
 # `+` tests
 (assert "`+` adds" (= (+ 1 2) 3))

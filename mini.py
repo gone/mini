@@ -14,7 +14,7 @@ class MiniObject(object):
             "   tuple -> list (may contain different types)\n"
             "   list -> vector (may only contain one type)\n"
             "   dict -> map\n"
-            "   MiniKeyword -> keyword\n"
+            "   MiniSymbol -> symbol\n"
             "   Pair -> pair"
             "mini vectors and maps should be treated as though immutable"
             "s-expressions should be parsed as tuples"
@@ -32,9 +32,9 @@ class Identifier(object):
     def __repr__(self):
         return '<identifier {}>'.format(self.value)
 
-KEYWORDS = {}
+SYMBOLS = {}
 
-class MiniKeyword(object):
+class MiniSymbol(object):
     def __init__(self,string):
         self.string = string
 
@@ -42,7 +42,7 @@ class MiniKeyword(object):
         return self is other
 
     def __repr__(self):
-        return '<keyword {}>'.format(self.string)
+        return '<symbol {}>'.format(self.string)
 
 class MiniPair(object):
     def __init__(self, car, cdr):
@@ -52,12 +52,12 @@ class MiniPair(object):
         self.car = car
         self.cdr = cdr
 
-def create_keyword(value,**kwargs):
-    if value in KEYWORDS:
-        return KEYWORDS[value]
+def create_symbol(value,**kwargs):
+    if value in SYMBOLS:
+        return SYMBOLS[value]
 
-    k = MiniObject(MiniKeyword(value), **kwargs)
-    KEYWORDS[value] = k
+    k = MiniObject(MiniSymbol(value), **kwargs)
+    SYMBOLS[value] = k
     return k
 
 token_regex = re.compile(r'''(?mx)
@@ -67,7 +67,7 @@ token_regex = re.compile(r'''(?mx)
     (?P<number>\-?\d+\.\d+|\-?\d+)|
     (?P<string>"[^"]*")|
     (?P<identifier>[_A-Za-z\?\-\+\*/=]+)|
-    (?P<keyword>\:[_A-Za-z\?\-\+\*/=]*)
+    (?P<symbol>\:[_A-Za-z\?\-\+\*/=]*)
     )''')
 
 def parse(source):
@@ -110,11 +110,11 @@ def parse(source):
                 start = match.start('identifier'),
                 end = match.end('identifier')))
 
-        elif match.group('keyword'):
-            result.append(create_keyword(
-                match.group('keyword'),
-                start = match.start('keyword'),
-                end = match.end('keyword')))
+        elif match.group('symbol'):
+            result.append(create_symbol(
+                match.group('symbol'),
+                start = match.start('symbol'),
+                end = match.end('symbol')))
 
         else:
             raise Exception()
@@ -177,7 +177,7 @@ def evaluate(expression, environment):
         if isinstance(expression.py_object, str) or is_number(expression.py_object):
             return expression
 
-        if isinstance(expression.py_object, MiniKeyword):
+        if isinstance(expression.py_object, MiniSymbol):
             return expression
 
         if isinstance(expression.py_object, tuple):
