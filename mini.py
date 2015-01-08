@@ -63,6 +63,19 @@ def create_symbol(string,**kwargs):
     SYMBOLS[string] = k
     return k
 
+def create_cons_collection(py_collection):
+    result = NIL
+
+    for item in reversed(py_collection):
+        result = MiniObject(MiniPair(item, result))
+
+    return result
+
+def cons_collection_to_py_collection(cons_collection):
+    while cons_collection != NIL:
+        yield car(cons_collection)
+        cons_collection = cdr(cons_collection)
+
 token_regex = re.compile(r'''(?mx)
     (\s*|\#.*?\n)*(?:
     (?P<open_parenthese>\()|
@@ -87,10 +100,12 @@ def parse(source):
             tmp, result = result, stack.pop()
             start, result = result
 
-            result.append(MiniObject(
-                tuple(tmp),
-                start = start,
-                end = match.end('close_parenthese')))
+            tmp = create_cons_collection(tmp)
+
+            tmp.meta['start'] = start
+            tmp.meta['end'] = match.end('close_parenthese')
+
+            result.append(tmp)
 
         elif match.group('number'):
             v = float(match.group('number'))
@@ -151,7 +166,7 @@ def is_number(arg):
 def py_to_mini(py_object):
     if isinstance(py_object,types.FunctionType) or isinstance(py_object,types.BuiltinFunctionType):
         def wrapped(pattern, environment):
-            result = py_object(*map(lambda arg : evaluate(arg,environment),pattern))
+            result = py_object(*map(lambda arg : evaluate(arg,environment),cons_collection_to_py_collection(pattern)))
 
             if is_number(result) or isinstance(result,MiniPair):
                 return MiniObject(result)
@@ -169,6 +184,7 @@ def py_to_mini(py_object):
 def apply(applicative, pattern, environment):
     if isinstance(applicative,dict):
         applicative = py_to_mini(lambda key : applicative[key])
+        raise Exception("TODO Is this used any more?")
 
     return applicative(pattern, environment)
 
@@ -180,8 +196,8 @@ def evaluate(expression, environment):
         if isinstance(expression.py_object, MiniSymbol):
             return expression
 
-        if isinstance(expression.py_object, tuple):
-            return apply(evaluate(expression.py_object[0],environment), expression.py_object[1:], environment)
+        if isinstance(expression.py_object, MiniPair):
+            return apply(evaluate(car(expression),environment), cdr(expression), environment)
 
         if isinstance(expression.py_object, Identifier):
             while environment != None:
@@ -265,11 +281,11 @@ def _assert(pattern, environment):
     return py_to_mini(assert_internal)(pattern, nest(environment))
 
 def throws(pattern, environment):
-    if len(pattern) != 2:
+    if cons_collection_len(pattern) != 2:
         raise Exception("throws? expects 2 argument, received {}".format(len(pattern)))
 
-    expression = pattern[0]
-    exception = evaluate(pattern[1], environment)
+    expression = car(pattern)
+    exception = evaluate(car(cdr(pattern)), environment)
 
     if not isinstance(exception.py_object, str):
         raise Exception('throws? expects a string as the second argument')
@@ -301,6 +317,15 @@ def _not(argument):
 
     assert False
 
+def evaluate_cons_collection_of_expressions(expressions, environment):
+    result = NIL
+
+    while expressions != NIL:
+        result = evaluate(car(expressions), environment)
+        expressions = cdr(expressions)
+
+    return result
+
 def evaluate_expressions(expressions, environment):
     result = NIL
 
@@ -318,12 +343,21 @@ def is_defined(identifier,environment):
 
     return False
 
+def cons_collection_len(cons_collection):
+    result = 0
+
+    while cons_collection != NIL:
+        result += 1
+        cons_collection = cdr(cons_collection)
+
+    return result
+
 def define(pattern, environment):
-    if len(pattern) < 2:
+    if cons_collection_len(pattern) < 2:
         raise Exception('DefineError: `define` expected two arguments, received {}'.format(len(pattern)))
 
-    head = pattern[0]
-    body = pattern[1:]
+    head = car(pattern)
+    body = cdr(pattern)
 
     if isinstance(head, MiniObject):
         if isinstance(head.py_object, Identifier):
@@ -332,31 +366,31 @@ def define(pattern, environment):
             if is_defined(identifier, environment):
                 raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
         
-            environment[identifier] = evaluate_expressions(body, environment)
+            environment[identifier] = evaluate_cons_collection_of_expressions(body, environment)
         
             return NIL
         
-        elif isinstance(head.py_object, tuple):
+        elif isinstance(head.py_object, MiniPair):
             raise Exception('NotImplementedError: Defining patterns is not yet implemented')
 
     raise Exception('TypeError: `define` expected Identifier or list, got {}'.format(type(head)))
 
 def defined_p(pattern, environment):
-    if len(pattern) != 1:
+    if cons_collection_len(pattern) != 1:
         raise Exception("ArgumentError: `defined?` expects 1 argument, received {}".format(len(pattern)))
 
-    if not isinstance(pattern[0].py_object, Identifier):
-        raise Exception("TypeError: Expected Identifier but got {}".format(type(pattern[0].py_object)))
+    if not isinstance(car(pattern).py_object, Identifier):
+        raise Exception("TypeError: Expected Identifier but got {}".format(type(car(pattern).py_object)))
 
-    return TRUE if is_defined(pattern[0].py_object.symbol, environment) else FALSE
+    return TRUE if is_defined(car(pattern).py_object.symbol, environment) else FALSE
 
 def _if(pattern, environment):
-    if not len(pattern) in [2,3]:
+    if not cons_collection_len(pattern) in [2,3]:
         raise Exception("ArgumentError")
 
-    condition = pattern[0]
-    if_result_true = pattern[1]
-    if_result_false = pattern[2]
+    condition = car(pattern)
+    if_result_true = car(cdr(pattern))
+    if_result_false = car(cdr(cdr(pattern)))
 
     result = evaluate(condition, environment)
 
@@ -372,14 +406,6 @@ def nest(environment):
         '__parent__'    : environment,
     }
 
-def py_collection_to_mini_cons_list(py_collection):
-    result = NIL
-
-    for item in reversed(py_collection):
-        result = MiniObject(MiniPair(item, result))
-
-    return result
-
 # This is vau from John N. Shutt's seminal paper
 # https://www.wpi.edu/Pubs/ETD/Available/etd-090110-124904/unrestricted/jshutt.pdf
 # While Greek letters are appropriate for an academic, theoretical context, they make for
@@ -388,19 +414,19 @@ def operative(pattern, environment):
     argument_list_identifier = None
     argument_identifiers = None
 
-    calling_environment_identifier = pattern[1].py_object.symbol
+    calling_environment_identifier = car(cdr(pattern)).py_object.symbol
 
-    if isinstance(pattern[0].py_object, Identifier):
-        argument_list_identifier = pattern[0].py_object.symbol
+    if isinstance(car(pattern).py_object, Identifier):
+        argument_list_identifier = car(pattern).py_object.symbol
 
         if calling_environment_identifier == argument_list_identifier:
             raise Exception("ArgumentError: Argument list identifier `{}` may not be the same as calling environment identifier".format(ai))
 
-    elif isinstance(pattern[0].py_object, tuple):
-        if not all([isinstance(arg.py_object, Identifier) for arg in pattern[0].py_object]):
+    elif car(pattern).py_object == None or isinstance(car(pattern).py_object, MiniPair):
+        if not all([isinstance(arg.py_object, Identifier) for arg in cons_collection_to_py_collection(car(pattern))]):
             raise Exception("ArgumentError: Unexpected {} {}".format(type(arg),arg))
 
-        argument_identifiers = [ai.py_object.symbol for ai in pattern[0].py_object]
+        argument_identifiers = [ai.py_object.symbol for ai in cons_collection_to_py_collection(car(pattern))]
         
         existing = set()
         for ai in argument_identifiers:
@@ -413,9 +439,9 @@ def operative(pattern, environment):
             existing.add(ai)
 
     else:
-        raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
+        raise Exception("ArgumentError: `operative` expected identifier or cons-list as first argument, received {}".format(type(car(pattern).py_object)))
 
-    if not isinstance(pattern[1].py_object,Identifier):
+    if not isinstance(car(cdr(pattern)).py_object,Identifier):
         raise Exception("ArgumentError: The second argument to `operative` should be an identifer")
 
     local_environment = nest(environment)
@@ -423,18 +449,20 @@ def operative(pattern, environment):
     def result(calling_pattern, calling_environment):
         assert (argument_list_identifier == None) != (argument_identifiers == None)
         if argument_list_identifier != None:
-            local_environment[argument_list_identifier] = py_collection_to_mini_cons_list(calling_pattern)
+            local_environment[argument_list_identifier] = calling_pattern
 
         if argument_identifiers != None:
-            if not len(calling_pattern) == len(argument_identifiers):
+            if not cons_collection_len(calling_pattern) == len(argument_identifiers):
                 raise Exception("ArgumentError: operative expected {} arguments, received {}".format(len(argument_identifiers),len(calling_pattern)))
+
+            calling_pattern = list(cons_collection_to_py_collection(calling_pattern))
 
             for i in range(len(argument_identifiers)):
                 local_environment[argument_identifiers[i]] = calling_pattern[i]
 
         local_environment[calling_environment_identifier] = calling_environment
 
-        return evaluate_expressions(pattern[2:], local_environment)
+        return evaluate_cons_collection_of_expressions(cdr(cdr(pattern)), local_environment)
 
     return result
 

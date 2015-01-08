@@ -121,6 +121,12 @@
 (assert "`operative` with a symbol argument receives a cons-linked-list"
         (and (= ((operative argument-list env (car argument-list)) 1) 1)
              (= ((operative argument-list env (cdr argument-list)) 1) nil)))
+(assert "`operative` argument lists nest"
+        (and (= ((operative argument-list env (car (car argument-list))) (1)) 1)
+             (= ((operative argument-list env (cdr (car argument-list))) (1)) nil)))
+(assert "`operative` with an s-expression argument still receives lists"
+        (and (= ((operative (arg) env (car arg)) (1)) 1)
+             (= ((operative (arg) env (cdr arg)) (1)) nil)))
 
 # `or` tests
 (assert "`or` returns false for both false" (not (or false false)))
