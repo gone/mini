@@ -466,32 +466,6 @@ def operative(pattern, environment):
 
     return result
 
-# This is lambda, but called function
-def function(pattern, environment):
-    if not isinstance(pattern[0].py_object,tuple):
-        raise Exception("ArgumentError: The first argument to `operative` should be an s-expression")
-
-    argument_identifiers = [ai.symbol for ai in pattern[0].symbol]
-
-    existing = set()
-    for ai in argument_identifiers:
-        if ai in existing:
-            raise Exception("ArgumentError: Argument `{}` already defined".format(ai))
-        existing.add(ai)
-
-    local_environment = nest(environment)
-    
-    def result(calling_pattern, calling_environment):
-        if not len(calling_pattern) == len(argument_identifiers):
-            raise Exception("ArgumentError: operative expected {} arguments, received {}".format(len(argument_identifiers),len(calling_pattern)))
-
-        for i in range(len(argument_identifiers)):
-            local_environment[argument_identifiers[i]] = evaluate(calling_pattern[i], calling_environment)
-
-        return evaluate_expressions(pattern[1:], local_environment)
-
-    return result
-
 def read_file(filename):
     with open(filename, 'r') as f:
         return f.read()
@@ -656,7 +630,6 @@ builtins = {
     'assert'    : _assert,
     'define'    : define,
     'defined?'  : defined_p,
-    'function'  : function,
     'if'        : _if,
     'operative' : operative,
     'throws?'   : throws,
