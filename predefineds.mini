@@ -12,3 +12,9 @@
 
 (define nil? (operative (expression) env
                         (= (evaluate expression env) nil)))
+
+(define get-current-environment
+        (wrap (operative () env env)))
+
+(define cons-list
+        (wrap (operative items _ items)))

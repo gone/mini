@@ -55,6 +55,30 @@ class MiniPair(object):
         self.car = car
         self.cdr = cdr
 
+def evaluate_arguments(arguments_cons_list, environment):
+    if arguments_cons_list == NIL:
+        return NIL
+
+    return cons(
+        evaluate(car(arguments_cons_list, environment)),
+        evaluate_arguments(cdr(arguments_cons_list), environment))
+
+class MiniWrapper(object):
+    def __init__(self, operative):
+        self.operative = operative
+
+    def __call__(self, pattern, environment):
+        return self.operative(evaluate_arguments(pattern, environment), environment)
+
+def wrap(thing):
+    return MiniObject(MiniWrapper(thing))
+
+def unwrap(thing):
+    if isinstance(thing.py_object, MiniWrapper):
+        return thing.py_object.operative
+
+    raise Exception('UnwrapError')
+
 def create_symbol(string,**kwargs):
     if string in SYMBOLS:
         return SYMBOLS[string]
@@ -604,6 +628,8 @@ builtins = {
     'prompt'        : py_to_mini(raw_input),
     'read-file'     : py_to_mini(read_file),
     'write-file'    : py_to_mini(write_file),
+    'wrap'          : py_to_mini(wrap),
+    'unwrap'        : py_to_mini(unwrap),
 
     # Builtin number functions
     '+'             : py_to_mini(add),
