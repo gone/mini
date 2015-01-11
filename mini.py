@@ -60,7 +60,7 @@ def evaluate_arguments(arguments_cons_list, environment):
         return NIL
 
     return cons(
-        evaluate(car(arguments_cons_list, environment)),
+        evaluate(car(arguments_cons_list), environment),
         evaluate_arguments(cdr(arguments_cons_list), environment))
 
 class MiniWrapper(object):
@@ -69,6 +69,9 @@ class MiniWrapper(object):
 
     def __call__(self, pattern, environment):
         return self.operative(evaluate_arguments(pattern, environment), environment)
+
+    def __repr__(self):
+        return "<wrapper {}>".format(repr(self.operative))
 
 def wrap(thing):
     return MiniObject(MiniWrapper(thing))
@@ -206,10 +209,8 @@ def py_to_mini(py_object):
     assert False
 
 def apply(applicative, pattern, environment):
-    if isinstance(applicative,dict):
-        applicative = py_to_mini(lambda key : applicative[key])
-        raise Exception("TODO Is this used any more?")
-
+    if isinstance(applicative, MiniObject):
+        return applicative.py_object(pattern, environment)
     return applicative(pattern, environment)
 
 def evaluate(expression, environment):
@@ -592,7 +593,7 @@ def ge(l,r):
     return gt(l,r) or eq(l,r)
 
 def cons(l,r):
-    return MiniPair(l,r)
+    return MiniObject(MiniPair(l,r))
 
 def car(p):
     return p.py_object.car

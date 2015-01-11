@@ -66,6 +66,12 @@
         (= (concatenate "Hello, " "world")
            "Hello, world"))
 
+# `cons-list` tests
+(assert "`cons-list` first argument is first item"
+        (car (cons-list true)))
+(assert "`cons-list` terminated by null cdr"
+        (= (cdr (cons-list false)) nil))
+
 # `define` tests
 (assert "`define` adds identifier to environment"
         (define previously-undefined-identifier true)
