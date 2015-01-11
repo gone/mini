@@ -66,6 +66,10 @@
         (= (concatenate "Hello, " "world")
            "Hello, world"))
 
+# `cons-dict` tests
+(assert "`cons-dict-get` returns association created by `cons-dict-set`"
+        (cons-dict-get (cons-dict-set nil :key true) :key))
+
 # `cons-list` tests
 (assert "`cons-list` first argument is first item"
         (car (cons-list true)))

@@ -563,28 +563,43 @@ def mod(l,r):
     raise Excepion('TypeError')
 
 def eq(l,r):
+    assert isinstance(l,MiniObject)
+    assert isinstance(r,MiniObject)
+
     if isinstance(l,MiniObject) and isinstance(r,MiniObject):
         return l.py_object == r.py_object
 
-    return l == r
+    return l.py_object == r.py_object
 
 def lt(l,r):
+    assert isinstance(l,MiniObject)
+    assert isinstance(r,MiniObject)
+
     if is_number(l.py_object) and is_number(r.py_object):
         return l.py_object < r.py_object
 
     if isinstance(l.py_object,str) and isinstance(r.py_object,str):
         return l.py_object < r.py_object
 
-    raise TypeError()
+    if isinstance(l.py_object,MiniSymbol) and isinstance(r.py_object,MiniSymbol):
+        return l.py_object.string < r.py_object.string
+
+    raise TypeError('`<` expected number or string, received {} and {}'.format(l.py_object, r.py_object))
 
 def gt(l,r):
+    assert isinstance(l,MiniObject)
+    assert isinstance(r,MiniObject)
+
     if is_number(l.py_object) and is_number(r.py_object):
         return l.py_object > r.py_object
 
     if isinstance(l.py_object,str) and isinstance(r.py_object,str):
         return l.py_object > r.py_object
 
-    raise TypeError()
+    if isinstance(l.py_object,MiniSymbol) and isinstance(r.py_object,MiniSymbol):
+        return l.py_object.string > r.py_object.string
+
+    raise TypeError('`>` expected number or string, received {} and {}'.format(l.py_object, r.py_object))
 
 def le(l,r):
     return lt(l,r) or eq(l,r)
@@ -600,6 +615,53 @@ def car(p):
 
 def cdr(p):
     return p.py_object.cdr
+
+def cons_dict_set(dictionary,key,value):
+    assert isinstance(dictionary,MiniObject)
+    assert isinstance(key,MiniObject)
+    assert isinstance(value,MiniObject)
+
+    if dictionary == NIL:
+        return cons(cons(key,value),cons(NIL,NIL))
+
+    current_node_key = car(car(dictionary))
+
+    if lt(key,current_node_key):
+        return cons(
+            car(dictionary),
+            cons(
+                cons_dict_set(car(cdr(dictionary))),
+                cdr(cdr(dictionary))))
+
+    if gt(key,current_node_key):
+        return cons(
+            car(dictionary),
+            cons(
+                car(cdr(dictionary)),
+                cons_dict_set(cdr(cdr(dictionary)))))
+
+    if eq(key,current_node_key):
+        return cons(cons(key,value), cdr(dictionary))
+
+    assert False
+
+def cons_dict_get(dictionary,key):
+    assert isinstance(dictionary, MiniObject)
+    assert isinstance(key, MiniObject)
+
+    if dictionary == NIL:
+        return NIL
+
+    current_node_key = car(car(dictionary))
+
+    if lt(key, current_node_key):
+        return cons_dict_get(car(cdr(dictionary)), key)
+
+    if gt(key, current_node_key):
+        return cons_dict_get(cdr(cdr(dictionary)), key)
+
+    if eq(key, current_node_key):
+        return cdr(car(dictionary))
 
 def identifier_to_symbol(identifier):
     if not isinstance(identifier.py_object, Identifier):
@@ -644,6 +706,10 @@ builtins = {
     'cons'          : py_to_mini(cons),
     'car'           : py_to_mini(car),
     'cdr'           : py_to_mini(cdr),
+
+    # Builtin cons dictionary functions
+    'cons-dict-set' : py_to_mini(cons_dict_set),
+    'cons-dict-get' : py_to_mini(cons_dict_get),
 
     # Builtin string functions
     'concatenate'   : py_to_mini(concatenate),
