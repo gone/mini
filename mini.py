@@ -63,12 +63,27 @@ def evaluate_arguments(arguments_cons_list, environment):
         evaluate(car(arguments_cons_list), environment),
         evaluate_arguments(cdr(arguments_cons_list), environment))
 
+class MiniApplicative(object):
+    def __init__(self, operative):
+        assert isinstance(operative,types.FunctionType) or hasattr(operative,'__call__')
+        self.operative = operative
+        
+    def __call__(self, pattern, environment):
+        assert isinstance(pattern, MiniObject)
+
+        return self.operative(pattern, environment)
+
 class MiniWrapper(object):
     def __init__(self, operative):
+        assert isinstance(operative,MiniObject)
+        assert isinstance(operative.py_object, MiniApplicative) or isinstance(operative.py_object, MiniWrapper)
+
         self.operative = operative
 
     def __call__(self, pattern, environment):
-        return self.operative(evaluate_arguments(pattern, environment), environment)
+        assert isinstance(pattern, MiniObject)
+
+        return self.operative.py_object(evaluate_arguments(pattern, environment), environment)
 
     def __repr__(self):
         return "<wrapper {}>".format(repr(self.operative))
@@ -204,38 +219,48 @@ def py_to_mini(py_object):
                 None    : NIL,
             }.get(result, result)
 
-        return wrapped
+        return MiniObject(MiniApplicative(wrapped))
 
     assert False
 
 def apply(applicative, pattern, environment):
-    if isinstance(applicative, MiniObject):
-        return applicative.py_object(pattern, environment)
-    return applicative(pattern, environment)
+    assert isinstance(applicative, MiniObject)
+
+    return applicative.py_object(pattern, environment)
 
 def evaluate(expression, environment):
-    if isinstance(expression, MiniObject):
-        if isinstance(expression.py_object, str) or is_number(expression.py_object):
-            return expression
+    assert isinstance(expression, MiniObject)
 
-        if isinstance(expression.py_object, MiniSymbol):
-            return expression
+    if isinstance(expression.py_object, str) or is_number(expression.py_object):
+        return expression
 
-        if isinstance(expression.py_object, MiniPair):
-            return apply(evaluate(car(expression),environment), cdr(expression), environment)
+    if isinstance(expression.py_object, MiniSymbol):
+        return expression
 
-        if isinstance(expression.py_object, Identifier):
-            while environment != None:
-                if expression.py_object.symbol in environment:
-                    return environment[expression.py_object.symbol]
-        
-                environment = environment.get('__parent__')
-        
-            raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.py_object.symbol))
+    if isinstance(expression.py_object, MiniPair):
+        applicative = evaluate(car(expression), environment)
+        arguments = cdr(expression)
 
-    assert False
+        assert isinstance(applicative, MiniObject)
+        assert isinstance(arguments, MiniObject)
+
+        if isinstance(applicative.py_object, MiniApplicative) or isinstance(applicative.py_object, MiniWrapper):
+            return apply(applicative, arguments, environment)
+
+        raise Exception("Expected applicative, got {}".format(applicative.py_object))
+
+    if isinstance(expression.py_object, Identifier):
+        while environment != None:
+            if expression.py_object.symbol in environment:
+                return environment[expression.py_object.symbol]
+    
+            environment = environment.get('__parent__')
+    
+        raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.py_object.symbol))
 
 def length(string):
+    assert isinstance(string, MiniObject)
+
     if isinstance(string.py_object, str):
         return len(string.py_object)
 
@@ -303,7 +328,7 @@ def _assert(pattern, environment):
         assert False
 
     # Execute in nested scope
-    return py_to_mini(assert_internal)(pattern, nest(environment))
+    return py_to_mini(assert_internal).py_object(pattern, nest(environment))
 
 def throws(pattern, environment):
     if cons_collection_len(pattern) != 2:
@@ -489,7 +514,7 @@ def operative(pattern, environment):
 
         return evaluate_cons_collection_of_expressions(cdr(cdr(pattern)), local_environment)
 
-    return result
+    return MiniObject(MiniApplicative(result))
 
 def read_file(filename):
     with open(filename, 'r') as f:
@@ -720,12 +745,12 @@ builtins = {
     'not'           : py_to_mini(_not),
 
     # Builtin special forms
-    'assert'    : _assert,
-    'define'    : define,
-    'defined?'  : defined_p,
-    'if'        : _if,
-    'operative' : operative,
-    'throws?'   : throws,
+    'assert'    : MiniObject(MiniApplicative(_assert)),
+    'define'    : MiniObject(MiniApplicative(define)),
+    'defined?'  : MiniObject(MiniApplicative(defined_p)),
+    'if'        : MiniObject(MiniApplicative(_if)),
+    'operative' : MiniObject(MiniApplicative(operative)),
+    'throws?'   : MiniObject(MiniApplicative(throws)),
 }
 
 if __name__ == '__main__':
