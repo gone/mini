@@ -1,1 +1,1 @@
-(print (first __arguments__))
+(print (car __arguments__))
