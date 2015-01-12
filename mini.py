@@ -23,10 +23,18 @@ class MiniObject(object):
         self.meta = meta
 
     def __repr__(self):
+        if self.py_object == None:
+            return 'nil'
+
+        if isinstance(self.py_object,bool):
+            return 'true' if self.py_object else 'false'
+
         return repr(self.py_object)
 
 class Identifier(object):
     def __init__(self,symbol,**kwargs):
+        assert isinstance(symbol,str)
+
         self.symbol = symbol
 
         self.start = kwargs.get('start')
@@ -62,6 +70,46 @@ def evaluate_arguments(arguments_cons_list, environment):
     return cons(
         evaluate(car(arguments_cons_list), environment),
         evaluate_arguments(cdr(arguments_cons_list), environment))
+
+class MiniEnvironment(MiniObject):
+    'This acts like a dict in Python code and a cons-dict in mini code'
+    def __init__(self):
+        super(self.__class__, self).__init__(None)
+
+    def __getitem__(self,key):
+        assert isinstance(key,str)
+        key_symbol = create_symbol(key)
+
+        return cons_dict_get(self,key_symbol)
+
+    def __setitem__(self,key,value):
+        assert isinstance(key,str)
+        key_symbol = create_symbol(key)
+
+        assert isinstance(value, MiniObject)
+        self.py_object = cons_dict_set(self,key_symbol,value).py_object
+
+    def __contains__(self,key):
+        assert isinstance(key,str)
+        key_symbol = create_symbol(key)
+
+        return cons_dict_has_key(self,key_symbol) == TRUE
+
+    def get(self,key):
+        assert isinstance(key,str)
+
+        if key in self:
+            return self[key]
+
+        return None
+
+def dict_to_environment(dictionary):
+    result = MiniEnvironment()
+
+    for key,value in dictionary.iteritems():
+        result[key] = value
+
+    return result
 
 class MiniApplicative(object):
     def __init__(self, operative):
@@ -182,14 +230,7 @@ def parse(source):
     assert not stack, "Unmatched parenthese ("
     return result
 
-class Nil(MiniObject):
-    def __init__(self,**kwargs):
-        super(Nil,self).__init__(None,**kwargs)
-
-    def __repr__(self):
-        return 'nil'
-
-NIL = Nil()
+NIL = MiniObject(None)
 
 class Boolean(MiniObject):
     def __init__(self, py_object, **kwargs):
@@ -452,9 +493,11 @@ def _if(pattern, environment):
     raise Exception("TypeError: `if` expects boolean, received {}".format(type(result)))
 
 def nest(environment):
-    return {
-        '__parent__'    : environment,
-    }
+    isinstance(environment,MiniEnvironment)
+
+    result = MiniEnvironment()
+    result['__parent__'] = environment
+    return result
 
 # This is vau from John N. Shutt's seminal paper
 # https://www.wpi.edu/Pubs/ETD/Available/etd-090110-124904/unrestricted/jshutt.pdf
@@ -591,9 +634,6 @@ def eq(l,r):
     assert isinstance(l,MiniObject)
     assert isinstance(r,MiniObject)
 
-    if isinstance(l,MiniObject) and isinstance(r,MiniObject):
-        return l.py_object == r.py_object
-
     return l.py_object == r.py_object
 
 def lt(l,r):
@@ -646,7 +686,7 @@ def cons_dict_set(dictionary,key,value):
     assert isinstance(key,MiniObject)
     assert isinstance(value,MiniObject)
 
-    if dictionary == NIL:
+    if eq(dictionary,NIL):
         return cons(cons(key,value),cons(NIL,NIL))
 
     current_node_key = car(car(dictionary))
@@ -655,7 +695,7 @@ def cons_dict_set(dictionary,key,value):
         return cons(
             car(dictionary),
             cons(
-                cons_dict_set(car(cdr(dictionary))),
+                cons_dict_set(car(cdr(dictionary)), key, value),
                 cdr(cdr(dictionary))))
 
     if gt(key,current_node_key):
@@ -663,7 +703,7 @@ def cons_dict_set(dictionary,key,value):
             car(dictionary),
             cons(
                 car(cdr(dictionary)),
-                cons_dict_set(cdr(cdr(dictionary)))))
+                cons_dict_set(cdr(cdr(dictionary)), key, value)))
 
     if eq(key,current_node_key):
         return cons(cons(key,value), cdr(dictionary))
@@ -674,8 +714,8 @@ def cons_dict_get(dictionary,key):
     assert isinstance(dictionary, MiniObject)
     assert isinstance(key, MiniObject)
 
-    if dictionary == NIL:
-        return NIL
+    if eq(dictionary,NIL):
+        raise Exception('KeyError: Dictionary does not contain key "{}"'.format(key))
 
     current_node_key = car(car(dictionary))
 
@@ -687,6 +727,24 @@ def cons_dict_get(dictionary,key):
 
     if eq(key, current_node_key):
         return cdr(car(dictionary))
+
+def cons_dict_has_key(dictionary,key):
+    assert isinstance(dictionary, MiniObject)
+    assert isinstance(key, MiniObject)
+
+    if eq(dictionary,NIL):
+        return FALSE
+
+    current_node_key = car(car(dictionary))
+
+    if lt(key, current_node_key):
+        return cons_dict_has_key(car(cdr(dictionary)), key)
+
+    if gt(key, current_node_key):
+        return cons_dict_has_key(cdr(cdr(dictionary)), key)
+
+    if eq(key, current_node_key):
+        return TRUE
 
 def identifier_to_symbol(identifier):
     if not isinstance(identifier.py_object, Identifier):
@@ -753,13 +811,15 @@ builtins = {
     'throws?'   : MiniObject(MiniApplicative(throws)),
 }
 
+builtins = dict_to_environment(builtins)
+
 if __name__ == '__main__':
     import os.path
     import sys
 
     arguments = sys.argv[1:]
 
-    predefineds = nest(dict(builtins))
+    predefineds = nest(builtins)
     predefineds_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'predefineds.mini')
 
     with open(predefineds_filename, 'r') as predefineds_file:
@@ -772,7 +832,7 @@ if __name__ == '__main__':
             traceback.print_exc()
 
     if len(arguments) == 0:
-        environment = nest(dict(predefineds))
+        environment = nest(predefineds)
         
         while True:
             source = raw_input('>>> ')
@@ -787,8 +847,8 @@ if __name__ == '__main__':
         filename = arguments[0]
         arguments = arguments[1:]
 
-        environment = nest(dict(predefineds))
-        environment['__file__'] = os.path.join(os.path.realpath(filename))
+        environment = nest(predefineds)
+        environment['__file__'] = MiniObject(os.path.join(os.path.realpath(filename)))
         environment['__arguments__'] = create_cons_collection(map(MiniObject,arguments))
         
         with open(filename,'r') as f:
