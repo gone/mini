@@ -145,6 +145,10 @@
 (assert "`or` returns true for both true" (or true true))
 (assert "`or` doesn't evalueate second argument if first is true" (or true (/ 1 0)))
 
+# `read` tests
+(assert "`read` reads identifiers"
+    (= (identifier->symbol (read "identifier")) :identifier))
+
 # `slice` tests
 (assert "`slice` returns a slice of a string"
         (= (slice "Hello, world" 1 11) "ello, worl"))

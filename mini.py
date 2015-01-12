@@ -63,6 +63,9 @@ class MiniPair(object):
         self.car = car
         self.cdr = cdr
 
+    def __repr__(self):
+        return '<pair {}, {}>'.format(self.car, self.cdr)
+
 def evaluate_arguments(arguments_cons_list, environment):
     if arguments_cons_list == NIL:
         return NIL
@@ -249,7 +252,7 @@ def is_number(arg):
 def py_to_mini(py_object):
     if isinstance(py_object,types.FunctionType) or isinstance(py_object,types.BuiltinFunctionType):
         def wrapped(pattern, environment):
-            result = py_object(*map(lambda arg : evaluate(arg,environment),cons_collection_to_py_collection(pattern)))
+            result = py_object(*cons_collection_to_py_collection(pattern))
 
             if is_number(result) or isinstance(result,MiniPair):
                 return MiniObject(result)
@@ -260,7 +263,7 @@ def py_to_mini(py_object):
                 None    : NIL,
             }.get(result, result)
 
-        return MiniObject(MiniApplicative(wrapped))
+        return MiniObject(MiniWrapper(MiniObject(MiniApplicative(wrapped))))
 
     assert False
 
@@ -357,8 +360,8 @@ def _assert(pattern, environment):
             description = arguments[0].py_object
             assertion = arguments[1:]
         
-        if not isinstance(assertion[-1],Boolean):
-            raise Exception("TypeError: `assert` expected Boolean assertion but received {}".format(type(assertion)))
+        if not isinstance(assertion[-1].py_object, bool):
+            raise Exception("TypeError: `assert` expected Boolean assertion but received {} {}".format(type(assertion[-1].py_object), assertion[-1]))
         
         if assertion[-1] is TRUE:
             return None
@@ -747,10 +750,24 @@ def cons_dict_has_key(dictionary,key):
         return TRUE
 
 def identifier_to_symbol(identifier):
+    assert isinstance(identifier, MiniObject)
+
     if not isinstance(identifier.py_object, Identifier):
         raise Exception('`identifier->symbol` expected identifier, received {}'.format(type(identifier.py_object)))
 
     return create_symbol(identifier.py_object.symbol)
+
+def read(string):
+    assert isinstance(string,MiniObject)
+
+    if not isinstance(string.py_object,str):
+        raise Exception("TypeError: `read` expected string, got {}".format(type(strin.py_object)))
+
+    result =  parse(string.py_object)
+
+    assert len(result) == 1
+
+    return result[0]
 
 builtins = {
     # Builtin constants
@@ -774,6 +791,7 @@ builtins = {
     'prompt'        : py_to_mini(raw_input),
     'read-file'     : py_to_mini(read_file),
     'write-file'    : py_to_mini(write_file),
+    'read'          : py_to_mini(read),
     'wrap'          : py_to_mini(wrap),
     'unwrap'        : py_to_mini(unwrap),
 
