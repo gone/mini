@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import re
 import traceback
-import types
 
 class MiniObject(object):
     def __init__(self, py_object, **meta):
@@ -116,7 +115,7 @@ def dict_to_environment(dictionary):
 
 class MiniApplicative(object):
     def __init__(self, operative):
-        assert isinstance(operative,types.FunctionType) or hasattr(operative,'__call__')
+        assert callable(operative)
         self.operative = operative
         
     def __call__(self, pattern, environment):
@@ -250,22 +249,21 @@ def is_number(arg):
     return isinstance(arg, int) and not isinstance(arg, bool)
 
 def py_to_mini(py_object):
-    if isinstance(py_object,types.FunctionType) or isinstance(py_object,types.BuiltinFunctionType):
-        def wrapped(pattern, environment):
-            result = py_object(*cons_collection_to_py_collection(pattern))
+    assert callable(py_object)
+    
+    def wrapped(pattern, environment):
+        result = py_object(*cons_collection_to_py_collection(pattern))
 
-            if is_number(result) or isinstance(result,MiniPair):
-                return MiniObject(result)
+        if is_number(result) or isinstance(result,MiniPair):
+            return MiniObject(result)
 
-            return {
-                True    : TRUE,
-                False   : FALSE,
-                None    : NIL,
-            }.get(result, result)
+        return {
+            True    : TRUE,
+            False   : FALSE,
+            None    : NIL,
+        }.get(result, result)
 
-        return MiniObject(MiniWrapper(MiniObject(MiniApplicative(wrapped))))
-
-    assert False
+    return MiniObject(MiniWrapper(MiniObject(MiniApplicative(wrapped))))
 
 def apply(applicative, pattern, environment):
     assert isinstance(applicative, MiniObject)
