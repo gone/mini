@@ -178,58 +178,62 @@ token_regex = re.compile(r'''(?mx)
     (?P<symbol>\:[_A-Za-z\?\-\+\*/=\>\<]*)
     )''')
 
-def parse(source):
-    stack = []
+def parse_all(source):
+    matches = list(token_regex.finditer(source))
     result = []
+    match_index_wrapped = [0]
 
-    for match in token_regex.finditer(source):
+    def parse(matches, index_holder):
+        match = matches[index_holder[0]]
+        index_holder[0] += 1
+
         if match.group('open_parenthese'):
-            stack.append((match.start('open_parenthese'),result))
-            result = []
+            r = []
 
-        elif match.group('close_parenthese'):
-            assert stack, "Unmatched parenthese )"
-            tmp, result = result, stack.pop()
-            start, result = result
+            while index_holder[0] < len(matches) and not matches[index_holder[0]].group('close_parenthese'):
+                r.append(parse(matches, index_holder))
 
-            tmp = create_cons_collection(tmp)
+            if index_holder[0] == len(matches):
+                raise Exception('Unmatched parenthese (')
 
-            tmp.meta['start'] = start
-            tmp.meta['end'] = match.end('close_parenthese')
+            index_holder[0] += 1
+            return create_cons_collection(r)
 
-            result.append(tmp)
+        if match.group('close_parenthese'):
+            raise Exception("Unmatched parenthese )")
 
-        elif match.group('number'):
+        if match.group('number'):
             v = float(match.group('number'))
             if v.is_integer(): v = int(v)
 
-            result.append(MiniObject(
+            return MiniObject(
                 v,
                 start = match.start('number'),
-                end = match.end('number')))
+                end = match.end('number'))
 
-        elif match.group('string'):
-            result.append(MiniObject(
+        if match.group('string'):
+            return MiniObject(
                 match.group('string')[1:-1],
                 start = match.start('string'),
-                end = match.end('string')))
+                end = match.end('string'))
 
-        elif match.group('identifier'):
-            result.append(MiniObject(Identifier(
+        if match.group('identifier'):
+            return MiniObject(Identifier(
                 match.group('identifier'),
                 start = match.start('identifier'),
-                end = match.end('identifier'))))
+                end = match.end('identifier')))
 
-        elif match.group('symbol'):
-            result.append(create_symbol(
+        if match.group('symbol'):
+            return create_symbol(
                 match.group('symbol')[1:],
                 start = match.start('symbol'),
-                end = match.end('symbol')))
+                end = match.end('symbol'))
 
-        else:
-            raise Exception()
+        assert False, "I'm not sure how this happened"
 
-    assert not stack, "Unmatched parenthese ("
+    while match_index_wrapped[0] < len(matches):
+        result.append(parse(matches, match_index_wrapped))
+
     return result
 
 NIL = MiniObject(None)
@@ -761,7 +765,7 @@ def read(string):
     if not isinstance(string.py_object,str):
         raise Exception("TypeError: `read` expected string, got {}".format(type(strin.py_object)))
 
-    result =  parse(string.py_object)
+    result =  parse_all(string.py_object)
 
     assert len(result) == 1
 
@@ -842,7 +846,7 @@ if __name__ == '__main__':
         predefineds_source = predefineds_file.read()
 
         try:
-            evaluate_expressions(parse(predefineds_source), predefineds)
+            evaluate_expressions(parse_all(predefineds_source), predefineds)
 
         except:
             traceback.print_exc()
@@ -854,7 +858,7 @@ if __name__ == '__main__':
             source = raw_input('>>> ')
             
             try:
-                print(evaluate_expressions(parse(source), environment))
+                print(evaluate_expressions(parse_all(source), environment))
         
             except:
                 traceback.print_exc()
@@ -871,7 +875,7 @@ if __name__ == '__main__':
             source = f.read()
 
         try:
-            print(evaluate_expressions(parse(source), environment))
+            print(evaluate_expressions(parse_all(source), environment))
 
         except:
             traceback.print_exc()
