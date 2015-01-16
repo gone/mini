@@ -265,6 +265,9 @@ def py_to_mini(py_object):
         if is_number(result) or isinstance(result,MiniPair):
             return MiniObject(result)
 
+        if isinstance(result,str):
+            return MiniObject(result)
+
         return {
             True    : TRUE,
             False   : FALSE,
