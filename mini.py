@@ -179,10 +179,6 @@ token_regex = re.compile(r'''(?mx)
     )''')
 
 def parse_all(source):
-    matches = list(token_regex.finditer(source))
-    result = []
-    match_index_wrapped = [0]
-
     def parse(matches, index_holder):
         match = matches[index_holder[0]]
         index_holder[0] += 1
@@ -231,10 +227,18 @@ def parse_all(source):
 
         assert False, "I'm not sure how this happened"
 
-    while match_index_wrapped[0] < len(matches):
-        result.append(parse(matches, match_index_wrapped))
+    def parse_all_internal(matches, index_holder):
+        if index_holder[0] == len(matches):
+            return NIL
 
-    return create_cons_collection(result)
+        parsed_atom = parse(matches, index_holder)
+
+        return cons(parsed_atom, parse_all_internal(matches, index_holder))
+
+    matches = list(token_regex.finditer(source))
+    match_index_wrapped = [0]
+
+    return parse_all_internal(matches, match_index_wrapped)
 
 NIL = MiniObject(None)
 
