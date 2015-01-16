@@ -234,7 +234,7 @@ def parse_all(source):
     while match_index_wrapped[0] < len(matches):
         result.append(parse(matches, match_index_wrapped))
 
-    return result
+    return create_cons_collection(result)
 
 NIL = MiniObject(None)
 
@@ -413,20 +413,12 @@ def _not(argument):
 
     assert False
 
-def evaluate_cons_collection_of_expressions(expressions, environment):
+def evaluate_expressions(expressions, environment):
     result = NIL
 
     while expressions != NIL:
         result = evaluate(car(expressions), environment)
         expressions = cdr(expressions)
-
-    return result
-
-def evaluate_expressions(expressions, environment):
-    result = NIL
-
-    for expression in expressions:
-        result = evaluate(expression, environment)
 
     return result
 
@@ -462,7 +454,7 @@ def define(pattern, environment):
             if is_defined(identifier, environment):
                 raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
         
-            environment[identifier] = evaluate_cons_collection_of_expressions(body, environment)
+            environment[identifier] = evaluate_expressions(body, environment)
         
             return NIL
         
@@ -560,7 +552,7 @@ def operative(pattern, environment):
 
         local_environment[calling_environment_identifier] = calling_environment
 
-        return evaluate_cons_collection_of_expressions(cdr(cdr(pattern)), local_environment)
+        return evaluate_expressions(cdr(cdr(pattern)), local_environment)
 
     return MiniObject(MiniApplicative(result))
 
@@ -767,9 +759,9 @@ def read(string):
 
     result =  parse_all(string.py_object)
 
-    assert len(result) == 1
+    assert cdr(result) == NIL
 
-    return result[0]
+    return car(result)
 
 builtins = {
     # Builtin constants
