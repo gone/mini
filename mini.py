@@ -30,6 +30,12 @@ class MiniObject(object):
 
         return repr(self.py_object)
 
+    def __str__(self):
+        if isinstance(self.py_object,str):
+            return self.py_object
+
+        return repr(self)
+
 class Identifier(object):
     def __init__(self,symbol,**kwargs):
         assert isinstance(symbol,str)
