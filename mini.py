@@ -185,7 +185,7 @@ token_regex = re.compile(r'''(?mx)
     )''')
 
 def parse_all(source):
-    def parse(matches, index_holder):
+    def parse_sexp(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('open_parenthese'):
             index_holder[0] += 1
@@ -200,11 +200,13 @@ def parse_all(source):
             index_holder[0] += 1
             return create_cons_collection(r)
 
+    def parse_close_paren(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('close_parenthese'):
             index_holder[0] += 1
             raise Exception("Unmatched parenthese )")
 
+    def parse_number(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('number'):
             index_holder[0] += 1
@@ -216,6 +218,7 @@ def parse_all(source):
                 start = match.start('number'),
                 end = match.end('number'))
 
+    def parse_string_literal(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('string'):
             index_holder[0] += 1
@@ -224,6 +227,7 @@ def parse_all(source):
                 start = match.start('string'),
                 end = match.end('string'))
 
+    def parse_identifier(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('identifier'):
             index_holder[0] += 1
@@ -232,6 +236,7 @@ def parse_all(source):
                 start = match.start('identifier'),
                 end = match.end('identifier')))
 
+    def parse_symbol(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('symbol'):
             index_holder[0] += 1
@@ -239,6 +244,21 @@ def parse_all(source):
                 match.group('symbol')[1:],
                 start = match.start('symbol'),
                 end = match.end('symbol'))
+
+    def parse(matches, index_holder):
+        parsers = [
+            parse_sexp,
+            parse_number,
+            parse_string_literal,
+            parse_identifier,
+            parse_symbol,
+            parse_close_paren,
+        ]
+
+        for parser in parsers:
+            result = parser(matches,index_holder)
+            if result:
+                return result
 
         assert False, "I'm not sure how this happened"
 
