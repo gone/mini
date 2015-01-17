@@ -1,1 +1,3 @@
-(print (car __arguments__))
+(if (= __arguments__ nil)
+    (print "No arguments given")
+    (print (car __arguments__)))
