@@ -203,12 +203,6 @@ def parse_all(source):
 
         return parse(matches,index_holder,parse_to_close_paren)
 
-    def parse_close_paren(matches, index_holder):
-        match = matches[index_holder[0]]
-        if match.group('close_parenthese'):
-            index_holder[0] += 1
-            raise Exception("Unmatched parenthese )")
-
     def parse_number(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('number'):
@@ -255,7 +249,6 @@ def parse_all(source):
             parse_string_literal,
             parse_identifier,
             parse_symbol,
-            parse_close_paren,
         ]
 
         for parser in parsers:
@@ -266,16 +259,21 @@ def parse_all(source):
 
         assert False, "I'm not sure how this happened"
 
-    def parse_all_internal(matches, index_holder):
+    def parse_to_end(matches, index_holder):
         if index_holder[0] == len(matches):
             return NIL
 
-        return parse(matches, index_holder, parse_all_internal)
+        match = matches[index_holder[0]]
+        if match.group('close_parenthese'):
+            index_holder[0] += 1
+            raise Exception("Unmatched parenthese )")
+
+        return parse(matches, index_holder, parse_to_end)
 
     matches = list(token_regex.finditer(source))
     match_index_wrapped = [0]
 
-    return parse_all_internal(matches, match_index_wrapped)
+    return parse_to_end(matches, match_index_wrapped)
 
 NIL = MiniObject(None)
 
