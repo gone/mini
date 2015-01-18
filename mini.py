@@ -185,14 +185,11 @@ token_regex = re.compile(r'''(?mx)
     )''')
 
 def parse_all(source):
-    def parse_sexp(matches, index_holder, continuation):
+    def parse_sexp(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('open_parenthese'):
             index_holder[0] += 1
-            result = parse_to_close_paren(matches, index_holder)
-
-            continuation_result = continuation(matches, index_holder)
-            return cons(result, continuation_result)
+            return parse_to_close_paren(matches, index_holder)
 
     def parse_to_close_paren(matches, index_holder):
         if index_holder[0] == len(matches):
@@ -206,59 +203,44 @@ def parse_all(source):
 
         return parse(matches,index_holder,parse_to_close_paren)
 
-    def parse_number(matches, index_holder, continuation):
+    def parse_number(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('number'):
             index_holder[0] += 1
             v = float(match.group('number'))
             if v.is_integer(): v = int(v)
 
-            result = MiniObject(
+            return MiniObject(
                 v,
                 start = match.start('number'),
                 end = match.end('number'))
 
-            continuation_result = continuation(matches, index_holder)
-            return cons(result, continuation_result)
-
-    def parse_string_literal(matches, index_holder, continuation):
+    def parse_string_literal(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('string'):
             index_holder[0] += 1
-
-            result = MiniObject(
+            return MiniObject(
                 match.group('string')[1:-1],
                 start = match.start('string'),
                 end = match.end('string'))
 
-            continuation_result = continuation(matches, index_holder)
-            return cons(result, continuation_result)
-
-    def parse_identifier(matches, index_holder, continuation):
+    def parse_identifier(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('identifier'):
             index_holder[0] += 1
-
-            result = MiniObject(Identifier(
+            return MiniObject(Identifier(
                 match.group('identifier'),
                 start = match.start('identifier'),
                 end = match.end('identifier')))
 
-            continuation_result = continuation(matches, index_holder)
-            return cons(result, continuation_result)
-
-    def parse_symbol(matches, index_holder, continuation):
+    def parse_symbol(matches, index_holder):
         match = matches[index_holder[0]]
         if match.group('symbol'):
             index_holder[0] += 1
-
-            result = create_symbol(
+            return create_symbol(
                 match.group('symbol')[1:],
                 start = match.start('symbol'),
                 end = match.end('symbol'))
-
-            continuation_result = continuation(matches, index_holder)
-            return cons(result, continuation_result)
 
     def parse(matches, index_holder, continuation):
         parsers = [
@@ -270,9 +252,10 @@ def parse_all(source):
         ]
 
         for parser in parsers:
-            result = parser(matches,index_holder,continuation)
+            result = parser(matches,index_holder)
             if result:
-                return result
+                continuation_result = continuation(matches, index_holder)
+                return cons(result, continuation_result)
 
         assert False, "I'm not sure how this happened"
 
