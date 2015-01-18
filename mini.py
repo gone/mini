@@ -201,7 +201,7 @@ def parse_all(source):
             index_holder[0] += 1
             return NIL
 
-        return parse_with_continuation(matches,index_holder,parse_to_close_paren)
+        return parse(matches,index_holder,parse_to_close_paren)
 
     def parse_close_paren(matches, index_holder):
         match = matches[index_holder[0]]
@@ -248,7 +248,7 @@ def parse_all(source):
                 start = match.start('symbol'),
                 end = match.end('symbol'))
 
-    def parse(matches, index_holder):
+    def parse(matches, index_holder, continuation):
         parsers = [
             parse_sexp,
             parse_number,
@@ -261,22 +261,16 @@ def parse_all(source):
         for parser in parsers:
             result = parser(matches,index_holder)
             if result:
-                return result
+                continuation_result = continuation(matches, index_holder)
+                return cons(result, continuation_result)
 
         assert False, "I'm not sure how this happened"
-
-    def parse_with_continuation(matches, index_holder, continuation):
-        result = parse(matches, index_holder)
-
-        if result:
-            continuation_result = continuation(matches, index_holder)
-            return cons(result, continuation_result)
 
     def parse_all_internal(matches, index_holder):
         if index_holder[0] == len(matches):
             return NIL
 
-        return parse_with_continuation(matches, index_holder, parse_all_internal)
+        return parse(matches, index_holder, parse_all_internal)
 
     matches = list(token_regex.finditer(source))
     match_index_wrapped = [0]
