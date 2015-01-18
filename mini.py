@@ -187,8 +187,9 @@ token_regex = re.compile(r'''(?mx)
 def parse_all(source):
     def parse(matches, index_holder):
         match = matches[index_holder[0]]
+        index_holder[0] += 1
+
         if match.group('open_parenthese'):
-            index_holder[0] += 1
             r = []
 
             while index_holder[0] < len(matches) and not matches[index_holder[0]].group('close_parenthese'):
@@ -200,14 +201,10 @@ def parse_all(source):
             index_holder[0] += 1
             return create_cons_collection(r)
 
-        match = matches[index_holder[0]]
         if match.group('close_parenthese'):
-            index_holder[0] += 1
             raise Exception("Unmatched parenthese )")
 
-        match = matches[index_holder[0]]
         if match.group('number'):
-            index_holder[0] += 1
             v = float(match.group('number'))
             if v.is_integer(): v = int(v)
 
@@ -216,25 +213,19 @@ def parse_all(source):
                 start = match.start('number'),
                 end = match.end('number'))
 
-        match = matches[index_holder[0]]
         if match.group('string'):
-            index_holder[0] += 1
             return MiniObject(
                 match.group('string')[1:-1],
                 start = match.start('string'),
                 end = match.end('string'))
 
-        match = matches[index_holder[0]]
         if match.group('identifier'):
-            index_holder[0] += 1
             return MiniObject(Identifier(
                 match.group('identifier'),
                 start = match.start('identifier'),
                 end = match.end('identifier')))
 
-        match = matches[index_holder[0]]
         if match.group('symbol'):
-            index_holder[0] += 1
             return create_symbol(
                 match.group('symbol')[1:],
                 start = match.start('symbol'),
