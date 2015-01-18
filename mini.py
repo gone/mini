@@ -262,18 +262,13 @@ def parse_all(source):
 
         assert False, "I'm not sure how this happened"
 
-    def parse_with_continuation(matches, index_holder, continuation):
-        result = parse(matches, index_holder)
-
-        if result:
-            continuation_result = continuation(matches, index_holder)
-            return cons(result, continuation_result)
-
     def parse_all_internal(matches, index_holder):
         if index_holder[0] == len(matches):
             return NIL
 
-        return parse_with_continuation(matches, index_holder, parse_all_internal)
+        parsed_atom = parse(matches, index_holder)
+
+        return cons(parsed_atom, parse_all_internal(matches, index_holder))
 
     matches = list(token_regex.finditer(source))
     match_index_wrapped = [0]
