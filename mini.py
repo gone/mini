@@ -189,16 +189,19 @@ def parse_all(source):
         match = matches[index_holder[0]]
         if match.group('open_parenthese'):
             index_holder[0] += 1
-            r = []
+            return parse_to_close_paren(matches, index_holder)
 
-            while index_holder[0] < len(matches) and not matches[index_holder[0]].group('close_parenthese'):
-                r.append(parse(matches, index_holder))
+    def parse_to_close_paren(matches, index_holder):
+        if index_holder[0] == len(matches):
+            raise Exception('Unmatched parenthese (')
 
-            if index_holder[0] == len(matches):
-                raise Exception('Unmatched parenthese (')
+        match = matches[index_holder[0]]
 
+        if match.group('close_parenthese'):
             index_holder[0] += 1
-            return create_cons_collection(r)
+            return NIL
+
+        return parse_with_continuation(matches,index_holder,parse_to_close_paren)
 
     def parse_close_paren(matches, index_holder):
         match = matches[index_holder[0]]
