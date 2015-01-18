@@ -186,6 +186,18 @@ token_regex = re.compile(r'''(?mx)
 
 def parse_all(source):
     def parse_sexp(matches, index_holder, continuation):
+        def parse_to_close_paren(matches, index_holder):
+            if index_holder[0] == len(matches):
+                raise Exception('Unmatched parenthese (')
+        
+            match = matches[index_holder[0]]
+        
+            if match.group('close_parenthese'):
+                index_holder[0] += 1
+                return NIL
+        
+            return parse(matches,index_holder,parse_to_close_paren)
+
         match = matches[index_holder[0]]
         if match.group('open_parenthese'):
             index_holder[0] += 1
@@ -193,18 +205,6 @@ def parse_all(source):
 
             continuation_result = continuation(matches, index_holder)
             return cons(result, continuation_result)
-
-    def parse_to_close_paren(matches, index_holder):
-        if index_holder[0] == len(matches):
-            raise Exception('Unmatched parenthese (')
-
-        match = matches[index_holder[0]]
-
-        if match.group('close_parenthese'):
-            index_holder[0] += 1
-            return NIL
-
-        return parse(matches,index_holder,parse_to_close_paren)
 
     def parse_number(matches, index_holder, continuation):
         match = matches[index_holder[0]]
