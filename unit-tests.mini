@@ -95,6 +95,15 @@
 (assert "`function` creates function that returns body"
         ((function () true)))
 
+# `get-current-environment` tests
+(assert "`get-current-environment` contains local variables as symbols"
+        (define local-identifier true)
+        (cons-dict-get (get-current-environment) :local-identifier))
+(assert "`get-current-environment` contains parent scope under :__parent__"
+        (define parent-identifier true)
+        (assert (cons-dict-get (cons-dict-get (get-current-environment) :__parent__) :parent-identifier))
+        true)
+
 # `identifier->symbol` tests
 (assert "`identifier->symbol` returns a symbol when given an identifier"
         (= (identifier->symbol (quote identifier)) :identifier))
