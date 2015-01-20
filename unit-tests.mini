@@ -85,9 +85,15 @@
         (throws? (define already-defined-identifier :another-value) "AlreadyDefinedError"))
 
 # `defined?` tests
-(assert "`defined?` returns true for defined identifier" (defined? assert))
+(assert "`defined?` returns true for defined identifier"
+        (define identifier :value)
+        (defined? identifier))
 (assert "`defined?` returns false for undefined identifier"
         (not (defined? undefined-identifier)))
+
+# `function` tests
+(assert "`function` creates function that returns body"
+        ((function () true)))
 
 # `identifier->symbol` tests
 (assert "`identifier->symbol` returns a symbol when given an identifier"

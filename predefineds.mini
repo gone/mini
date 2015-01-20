@@ -1,3 +1,11 @@
+(define function
+  (operative outer-args outer-env
+             (define inner-arg-names (car outer-args))
+             (define function-body (cdr outer-args))
+
+             (wrap (operative inner-args inner-env
+                              (evaluate-expressions function-body outer-env)))))
+
 (define and (operative (left right) env
                        (if (evaluate left env)
                          (evaluate right env)
