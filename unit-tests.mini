@@ -137,6 +137,11 @@
 (assert "`operative` with an s-expression argument still receives lists"
         (and (= ((operative (arg) env (car arg)) (1)) 1)
              (= ((operative (arg) env (cdr arg)) (1)) nil)))
+(assert "`operative` executes body in a nested scope"
+        ((operative () env
+                    (define defined-in-nested-scope :value)
+                    (assert (defined? defined-in-nested-scope))))
+        (not (defined? defined-in-nested-scope)))
 
 # `or` tests
 (assert "`or` returns false for both false" (not (or false false)))

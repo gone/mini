@@ -455,7 +455,7 @@ def cons_collection_len(cons_collection):
 
 def define(pattern, environment):
     if cons_collection_len(pattern) < 2:
-        raise Exception('DefineError: `define` expected two arguments, received {}'.format(len(pattern)))
+        raise Exception('DefineError: `define` expected two arguments, received {}'.format(cons_collection_len(pattern)))
 
     head = car(pattern)
     body = cdr(pattern)
@@ -794,6 +794,7 @@ builtins = {
 
     # Builtin general functions
     'evaluate'      : py_to_mini(evaluate),
+    'evaluate-expressions'  : py_to_mini(evaluate_expressions),
     'print'         : py_to_mini(print),
     'prompt'        : py_to_mini(raw_input),
     'read-file'     : py_to_mini(read_file),
