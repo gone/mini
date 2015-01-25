@@ -1,5 +1,5 @@
 (define cond (operative cases env
-                        (define cond-internal (operative a _ nil))
+                        (define cond-internal (wrap (operative (cases-list) _ cases-list)))
                         (cond-internal cases)))
 
 (define function
