@@ -48,6 +48,12 @@ class Identifier(object):
     def __repr__(self):
         return '<identifier {}>'.format(self.symbol)
 
+def is_identifier(mini_object):
+    assert isinstance(mini_object, MiniObject)
+    if isinstance(mini_object.py_object, Identifier):
+        return TRUE
+    return FALSE
+
 SYMBOLS = {}
 
 class MiniSymbol(object):
@@ -702,6 +708,14 @@ def car(p):
 def cdr(p):
     return p.py_object.cdr
 
+def is_cons_list(mini_object):
+    assert isinstance(mini_object,MiniObject)
+
+    if eq(mini_object,NIL) or isinstance(mini_object.py_object,MiniPair):
+        return TRUE
+
+    return FALSE
+
 def cons_dict_set(dictionary,key,value):
     assert isinstance(dictionary,MiniObject)
     assert isinstance(key,MiniObject)
@@ -802,6 +816,10 @@ builtins = {
 
     # Builtin conversion functions
     'identifier->symbol'    : py_to_mini(identifier_to_symbol),
+
+    # Builtin type test functions
+    'cons-list?'    : py_to_mini(is_cons_list),
+    'identifier?'   : py_to_mini(is_identifier),
 
     # Builtin general functions
     'evaluate'      : py_to_mini(evaluate),

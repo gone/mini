@@ -93,6 +93,14 @@
 (assert "`cons-list` terminated by null cdr"
         (= (cdr (cons-list false)) nil))
 
+# `cons-list?` tests
+(assert "`cons-list?` returns true for nil"
+        (cons-list? nil))
+(assert "`cons-list?` returns true for cons-list"
+        (cons-list? (cons-list 1 2 3)))
+(assert "`cons-list?` returns false for non cons-list"
+        (not (cons-list? 1)))
+
 # `define` tests
 (assert "`define` adds identifier to environment"
         (define previously-undefined-identifier true)
@@ -127,6 +135,12 @@
 # `identifier->symbol` tests
 (assert "`identifier->symbol` returns a symbol when given an identifier"
         (= (identifier->symbol (quote identifier)) :identifier))
+
+# `identifier?` tests
+(assert "`identifier?` returns true for identifier"
+        (identifier? (quote identifier)))
+(assert "`identifier?` returns false for non-identifier"
+        (not (identifier? 1)))
 
 # `if` tests
 (assert "`if` returns second argument for true condition"
