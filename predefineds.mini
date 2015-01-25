@@ -3,8 +3,10 @@
              (define inner-arg-names (car outer-args))
              (define function-body (cdr outer-args))
 
+             (define initial-function-env (cons-dict-set nil :__parent__ outer-env))
+
              (wrap (operative inner-args inner-env
-                              (evaluate-expressions function-body outer-env)))))
+                              (evaluate-expressions function-body initial-function-env)))))
 
 (define and (operative (left right) env
                        (if (evaluate left env)

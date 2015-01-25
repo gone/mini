@@ -94,6 +94,9 @@
 # `function` tests
 (assert "`function` creates function that returns body"
         ((function () true)))
+(assert "`function` closes around defining environment"
+        (define defining-environment-identifier true)
+        ((function () defining-environment-identifier)))
 
 # `get-current-environment` tests
 (assert "`get-current-environment` contains local variables as symbols"
