@@ -69,6 +69,19 @@
 # `cond` tests
 (assert "`cond` returns nil for no conditions"
         (= (cond) nil))
+(assert "`cond` returns nil for no true conditions"
+        (= (cond (false :not-returned)
+                 (false :also-not-returned))
+           nil))
+(assert "`cond` returns true when pair evaluates to true"
+        (= (cond (false :not-returned)
+                 (true :returned)
+                 (false :also-not-returned))
+           :returned))
+(assert "`cond` does not execute bodies for false conditions"
+        (= (cond (false (/ 1 0))
+                 (true :returned))
+           :returned))
 
 # `cons-dict` tests
 (assert "`cons-dict-get` returns association created by `cons-dict-set`"

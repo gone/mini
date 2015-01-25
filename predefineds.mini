@@ -1,6 +1,13 @@
-(define cond (operative cases env
-                        (define cond-internal (wrap (operative (cases-list) _ cases-list)))
-                        (cond-internal cases)))
+(define cond
+  (operative cases env
+             (define cond-internal
+               (wrap (operative (cases-list) _
+                                (if (= cases-list nil)
+                                  nil
+                                  (if (evaluate (car (car cases-list)) env)
+                                    (evaluate (car (cdr (car cases-list))) env)
+                                    (cond-internal (cdr cases-list)))))))
+             (cond-internal cases)))
 
 (define function
   (operative outer-args outer-env
