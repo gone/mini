@@ -309,13 +309,16 @@ def evaluate(expression, environment):
         raise Exception("Expected applicative, got {}".format(applicative.py_object))
 
     if isinstance(expression.py_object, Identifier):
+        parent_symbol = create_symbol('__parent__')
+
         while environment != None:
-            if expression.py_object.symbol in environment:
+            if cons_dict_has_key(environment, create_symbol(expression.py_object.symbol)) == TRUE:
                 return environment[expression.py_object.symbol]
     
-            environment = environment.get('__parent__')
-    
-        raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.py_object.symbol))
+            if cons_dict_has_key(environment, parent_symbol) == TRUE:
+                environment = cons_dict_get(environment, create_symbol('__parent__'))
+            else: 
+                raise Exception('UndefinedIdentifierError: Undefined identifier {}'.format(expression.py_object.symbol))
 
 def length(string):
     assert isinstance(string, MiniObject)
@@ -435,15 +438,6 @@ def evaluate_expressions(expressions, environment):
 
     return result
 
-def is_defined(identifier,environment):
-    while not environment == None:
-        if identifier in environment:
-            return True
-
-        environment = environment.get('__parent__')
-
-    return False
-
 def cons_collection_len(cons_collection):
     result = 0
 
@@ -460,21 +454,21 @@ def define(pattern, environment):
     head = car(pattern)
     body = cdr(pattern)
 
-    if isinstance(head, MiniObject):
-        if isinstance(head.py_object, Identifier):
-            identifier = head.py_object.symbol
-        
-            if is_defined(identifier, environment):
-                raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
-        
-            environment[identifier] = evaluate_expressions(body, environment)
-        
-            return NIL
-        
-        elif isinstance(head.py_object, MiniPair):
-            raise Exception('NotImplementedError: Defining patterns is not yet implemented')
+    if isinstance(head.py_object, Identifier):
+        identifier = head.py_object.symbol
 
-    raise Exception('TypeError: `define` expected Identifier or list, got {}'.format(type(head)))
+        if is_defined(head, environment) == TRUE:
+            raise Exception('AlreadyDefinedError: the identifier {} is already defined'.format(identifier))
+    
+        environment[identifier] = evaluate_expressions(body, environment)
+    
+        return NIL
+    
+    elif isinstance(head.py_object, MiniPair):
+        raise Exception('NotImplementedError: Defining patterns is not yet implemented')
+
+    else:
+        raise Exception("DefineError")
 
 def defined_p(pattern, environment):
     if cons_collection_len(pattern) != 1:
@@ -483,7 +477,24 @@ def defined_p(pattern, environment):
     if not isinstance(car(pattern).py_object, Identifier):
         raise Exception("TypeError: Expected Identifier but got {}".format(type(car(pattern).py_object)))
 
-    return TRUE if is_defined(car(pattern).py_object.symbol, environment) else FALSE
+    return is_defined(car(pattern), environment)
+
+def is_defined(identifier, environment):
+    assert isinstance(identifier, MiniObject)
+    assert isinstance(environment, MiniObject)
+
+    identifier_symbol = identifier_to_symbol(identifier)
+    parent_symbol = create_symbol('__parent__')
+
+    while True:
+        if cons_dict_has_key(environment, identifier_symbol) == TRUE:
+            return TRUE
+
+        elif cons_dict_has_key(environment, parent_symbol) == TRUE:
+            environment = cons_dict_get(environment, parent_symbol)
+
+        else:
+            return FALSE
 
 def _if(pattern, environment):
     if not cons_collection_len(pattern) in [2,3]:
@@ -513,7 +524,7 @@ def nest(environment):
 # https://www.wpi.edu/Pubs/ETD/Available/etd-090110-124904/unrestricted/jshutt.pdf
 # While Greek letters are appropriate for an academic, theoretical context, they make for
 # poor variable names, so this is tentatively named `operative`
-def operative(pattern, environment):
+def operative(pattern, defining_environment):
     argument_list_identifier = None
     argument_identifiers = None
 
@@ -547,9 +558,9 @@ def operative(pattern, environment):
     if not isinstance(car(cdr(pattern)).py_object,Identifier):
         raise Exception("ArgumentError: The second argument to `operative` should be an identifer")
 
-    local_environment = nest(environment)
-    
     def result(calling_pattern, calling_environment):
+        local_environment = nest(defining_environment)
+
         assert (argument_list_identifier == None) != (argument_identifiers == None)
         if argument_list_identifier != None:
             local_environment[argument_list_identifier] = calling_pattern
