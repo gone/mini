@@ -1,3 +1,7 @@
+(define cond (operative cases env
+                        (define cond-internal (operative a _ nil))
+                        (cond-internal cases)))
+
 (define function
   (operative outer-args outer-env
              (define inner-arg-names (car outer-args))
