@@ -66,10 +66,6 @@
         (= (concatenate "Hello, " "world")
            "Hello, world"))
 
-# `cond` tests
-(assert "`cond` returns nil for no cases"
-        (= (cond) nil))
-
 # `cons-dict` tests
 (assert "`cons-dict-get` returns association created by `cons-dict-set`"
         (cons-dict-get (cons-dict-set nil :key true) :key))
@@ -164,6 +160,8 @@
                     (define defined-in-nested-scope :value)
                     (assert (defined? defined-in-nested-scope))))
         (not (defined? defined-in-nested-scope)))
+(assert "`operative` with no args receives nil"
+        (= ((operative args-list _ args-list)) nil))
 
 # `or` tests
 (assert "`or` returns false for both false" (not (or false false)))
@@ -193,3 +191,7 @@
         (throws? (assert false) "AssertionError"))
 (assert "`throws?` doesn't catch when the wrong exception is thrown"
         (throws? (throws? (assert false) "TypeError") "AssertionError"))
+
+# `wrap` tests
+(assert "`wrap` evaluates arguments to wrapped operative"
+        ((wrap (operative (input) _ input)) (= 1 1)))
