@@ -118,10 +118,13 @@
 
 # `function` tests
 (assert "`function` creates function that returns body"
-        ((function () true)))
+        ((function _ true)))
 (assert "`function` closes around defining environment"
         (define defining-environment-identifier true)
-        ((function () defining-environment-identifier)))
+        ((function _ defining-environment-identifier)))
+(assert "`function` with an identifier arg binding receives list"
+        (and (= ((function args (car args)) :arg) :arg)
+             (= ((function args (cdr args)) :arg) nil)))
 
 # `get-current-environment` tests
 (assert "`get-current-environment` contains local variables as symbols"

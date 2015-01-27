@@ -319,7 +319,7 @@ def evaluate(expression, environment):
 
         while environment != None:
             if cons_dict_has_key(environment, create_symbol(expression.py_object.symbol)) == TRUE:
-                return environment[expression.py_object.symbol]
+                return cons_dict_get(environment, create_symbol(expression.py_object.symbol))
     
             if cons_dict_has_key(environment, parent_symbol) == TRUE:
                 environment = cons_dict_get(environment, create_symbol('__parent__'))

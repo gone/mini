@@ -11,13 +11,19 @@
 
 (define function
   (operative outer-args outer-env
-             (define inner-arg-names (car outer-args))
+             (define arg-binding (car outer-args))
              (define function-body (cdr outer-args))
 
              (define initial-function-env (cons-dict-set nil :__parent__ outer-env))
 
              (wrap (operative inner-args inner-env
-                              (evaluate-expressions function-body initial-function-env)))))
+                              (define function-env
+                                (cond ((identifier? arg-binding) (cons-dict-set initial-function-env
+                                                                                (identifier->symbol arg-binding)
+                                                                                inner-args))
+                                      ((cons-list? arg-binding) (assert "Not yet implemented" false))
+                                      (true (assert "Must be an identifier or a cons-list" false))))
+                              (evaluate-expressions function-body function-env)))))
 
 (define and (operative (left right) env
                        (if (evaluate left env)
