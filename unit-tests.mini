@@ -149,6 +149,9 @@
 (assert "`function` with an identifier arg binding receives list"
         (and (= ((function args (car args)) :arg) :arg)
              (= ((function args (cdr args)) :arg) nil)))
+(assert "`function` with an s-expression arg binding receives arguments bound to names"
+        (and (= ((function (foo bar) foo) :baz :qux) :baz)
+             (= ((function (foo bar) bar) :baz :qux) :qux)))
 
 # `get-current-environment` tests
 (assert "`get-current-environment` contains local variables as symbols"

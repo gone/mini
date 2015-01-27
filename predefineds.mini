@@ -44,7 +44,9 @@
                                 (cond ((identifier? arg-binding) (cons-dict-set initial-function-env
                                                                                 (identifier->symbol arg-binding)
                                                                                 inner-args))
-                                      ((cons-list? arg-binding) (assert "Not yet implemented" false))
+                                      ((cons-list? arg-binding) (association-list->cons-dict (cons-list-zip (cons-list-map identifier->symbol arg-binding)
+                                                                                                            inner-args)
+                                                                                             initial-function-env))
                                       (true (assert "Must be an identifier or a cons-list" false))))
                               (evaluate-expressions function-body function-env)))))
 
