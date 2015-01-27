@@ -61,6 +61,13 @@
                 true)
         (not (defined? identifier-in-nested-scope)))
 
+# `association-list->cons-dict` tests
+(assert "association-list->cons-dict returns cons-dict"
+        (= :value
+           (cons-dict-get (association-list->cons-dict (cons-list-zip (cons-list :key) (cons-list :value))
+                                                       nil)
+                          :key)))
+
 # `concatenate` tests
 (assert "`concatenate` concatenates strings"
         (= (concatenate "Hello, " "world")

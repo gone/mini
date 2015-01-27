@@ -17,6 +17,15 @@
                          (true (cons (cons (car left) (car right))
                                      (cons-list-zip (cdr left) (cdr right))))))))
 
+# Maybe environments should have been association lists
+(define association-list->cons-dict
+  (wrap (operative (a-list cons-dict) _
+                   (if (= a-list nil)
+                     cons-dict
+                     (association-list->cons-dict
+                       (cdr a-list)
+                       (cons-dict-set cons-dict (car (car a-list)) (cdr (car a-list))))))))
+
 (define function
   (operative outer-args outer-env
              (define arg-binding (car outer-args))
