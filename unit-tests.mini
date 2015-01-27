@@ -108,6 +108,10 @@
 (assert "`cons-list?` returns false for non cons-list"
         (not (cons-list? 1)))
 
+# `cons-list-map` tests
+(assert "`cons-list-map` returns empty list for empty list"
+        (= (cons-list-map identifier->symbol nil) nil))
+
 # `cons-list-zip` tests
 (assert "`cons-list-zip` returns nil for empty lists"
         (= (cons-list-zip nil nil) nil))

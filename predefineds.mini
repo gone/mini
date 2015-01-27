@@ -26,6 +26,12 @@
                        (cdr a-list)
                        (cons-dict-set cons-dict (car (car a-list)) (cdr (car a-list))))))))
 
+(define cons-list-map
+  (wrap (operative (f xs) _
+                   (if (= xs nil)
+                     nil
+                     (cons (f (car xs)) (cons-list-map f (cdr xs)))))))
+
 (define function
   (operative outer-args outer-env
              (define arg-binding (car outer-args))
