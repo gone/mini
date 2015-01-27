@@ -111,6 +111,11 @@
 # `cons-list-map` tests
 (assert "`cons-list-map` returns empty list for empty list"
         (= (cons-list-map identifier->symbol nil) nil))
+(assert "`cons-list-map` calls mapping function on items"
+        (define inc (wrap (operative (i) _ (+ i 1))))
+        (define mapped (cons-list-map inc (cons-list 1 2)))
+        (and (= 2 (car mapped))
+             (= 3 (car (cdr mapped)))))
 
 # `cons-list-zip` tests
 (assert "`cons-list-zip` returns nil for empty lists"
