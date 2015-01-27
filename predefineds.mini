@@ -9,6 +9,14 @@
                                     (cond-internal (cdr cases-list)))))))
              (cond-internal cases)))
 
+(define cons-list-zip
+  (wrap (operative (left right) _
+                   (cond ((and (= left nil) (= right nil)) nil)
+                         ((= left nil) (assert false))
+                         ((= right nil) (assert false))
+                         (true (cons (cons (car left) (car right))
+                                     (cons-list-zip (cdr left) (cdr right))))))))
+
 (define function
   (operative outer-args outer-env
              (define arg-binding (car outer-args))

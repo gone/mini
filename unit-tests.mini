@@ -101,6 +101,14 @@
 (assert "`cons-list?` returns false for non cons-list"
         (not (cons-list? 1)))
 
+# `cons-list-zip` tests
+(assert "`cons-list-zip` returns nil for empty lists"
+        (= (cons-list-zip nil nil) nil))
+(assert "`cons-list-zip` returns association list"
+        (define a-list (cons-list-zip (cons-list :a) (cons-list :b)))
+        (and (= :a (car (car a-list)))
+             (= :b (cdr (car a-list)))))
+
 # `define` tests
 (assert "`define` adds identifier to environment"
         (define previously-undefined-identifier true)
