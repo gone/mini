@@ -61,11 +61,11 @@
                 true)
         (not (defined? identifier-in-nested-scope)))
 
-# `association-list->cons-dict` tests
-(assert "association-list->cons-dict returns cons-dict"
+# `merge-association-list-with-cons-dict` tests
+(assert "merge-association-list-with-cons-dict returns cons-dict"
         (= :value
-           (cons-dict-get (association-list->cons-dict (cons-list-zip (cons-list :key) (cons-list :value))
-                                                       nil)
+           (cons-dict-get (merge-association-list-with-cons-dict (cons-list-zip (cons-list :key) (cons-list :value))
+                                                                 nil)
                           :key)))
 
 # `concatenate` tests

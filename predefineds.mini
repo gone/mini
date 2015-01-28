@@ -18,11 +18,11 @@
                                      (cons-list-zip (cdr left) (cdr right))))))))
 
 # Maybe environments should have been association lists
-(define association-list->cons-dict
+(define merge-association-list-with-cons-dict
   (wrap (operative (a-list cons-dict) _
                    (if (= a-list nil)
                      cons-dict
-                     (association-list->cons-dict
+                     (merge-association-list-with-cons-dict
                        (cdr a-list)
                        (cons-dict-set cons-dict (car (car a-list)) (cdr (car a-list))))))))
 
@@ -44,9 +44,8 @@
                                 (cond ((identifier? arg-binding) (cons-dict-set initial-function-env
                                                                                 (identifier->symbol arg-binding)
                                                                                 inner-args))
-                                      ((cons-list? arg-binding) (association-list->cons-dict (cons-list-zip (cons-list-map identifier->symbol arg-binding)
-                                                                                                            inner-args)
-                                                                                             initial-function-env))
+                                      ((cons-list? arg-binding) (merge-association-list-with-cons-dict (cons-list-zip (cons-list-map identifier->symbol arg-binding) inner-args)
+                                                                                                       initial-function-env))
                                       (true (assert "Must be an identifier or a cons-list" false))))
                               (evaluate-expressions function-body function-env)))))
 
