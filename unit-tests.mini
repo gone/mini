@@ -152,6 +152,10 @@
 (assert "`function` with an s-expression arg binding receives arguments bound to names"
         (and (= ((function (foo bar) foo) :baz :qux) :baz)
              (= ((function (foo bar) bar) :baz :qux) :qux)))
+(assert "`function` can recurse"
+        (define factorial (function (n) (if (= n 1) 1 (* n (factorial (- n 1))))))
+        (and (= 6 (factorial 3))
+             (= 120 (factorial 5))))
 
 # `get-current-environment` tests
 (assert "`get-current-environment` contains local variables as symbols"
