@@ -2,6 +2,6 @@
 
 (define run-file (function (file args) (print (read-file file))))
 
-(if (empty? __arguments__)
+(if (= __arguments__ nil)
   (repl)
-  (run-file (first __arguments__) (rest __arguments__)))
+  (run-file (car __arguments__) (cdr __arguments__)))

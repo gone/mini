@@ -587,12 +587,17 @@ def operative(pattern, defining_environment):
     return MiniObject(MiniApplicative(result))
 
 def read_file(filename):
-    with open(filename, 'r') as f:
+    assert isinstance(filename, MiniObject)
+
+    with open(filename.py_object, 'r') as f:
         return f.read()
 
 def write_file(filename, string):
-    with open(filename, 'w') as f:
-        f.write(string)
+    assert isinstance(filename, MiniObject)
+    assert isinstance(string, MiniObject)
+
+    with open(filename.py_object, 'w') as f:
+        f.write(string.py_object)
 
 def add(l,r):
     if isinstance(l, MiniObject) and isinstance(r, MiniObject):
